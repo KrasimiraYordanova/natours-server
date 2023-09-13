@@ -23,8 +23,8 @@ async function register(email, password) {
 
 async function login(email, password) {
     // on login - looking to find inside the database the user's cridentials
-    const user = await User.findOne({ email }).collation({ locale:'en', strength: 2 });
-    // if user's credentials is wrong(email)' - throw error telling the user that email or pass are wrong
+    const user = await User.findOne({email}).collation({ locale:'en', strength: 2 });
+    // if user's credentials are wrong(email)' - throw error telling the user that email or pass are wrong
     if(!user) {
         throw new Error('Email or password are incorrect')
     }

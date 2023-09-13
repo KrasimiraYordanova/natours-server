@@ -39,11 +39,17 @@ const tourSchema = new Schema({
   price: {
     type: Number,
     required: [true, "A tour must have a price"],
+    min: [1, 'Price must be a valid positive number']
   },
   maxGroupSize: {
     type: Number,
     required: [true, "A tour must have a group size"],
   },
+  _ownerId: {
+    type: ObjectId, 
+    ref: 'User', 
+    required: true
+  }
 //   imageCover: {
 //     type: String,
 //     required: [true, "A tour must have a cover image"],

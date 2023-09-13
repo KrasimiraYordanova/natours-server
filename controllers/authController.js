@@ -16,7 +16,7 @@ authController.post('/register',
         }
         // on register - registering the user and returning the object with token and user info
         if(req.body.password != req.body.repassword) {
-            throw new Error('Passwords does not match');
+            throw new Error('Passwords do not match');
         }
         const token = await register(req.body.email, req.body.password);
         res.status(200).json(token);
@@ -31,10 +31,12 @@ authController.post('/register',
 authController.post('/login', async(req, res) => {
     try {
         const token = await login(req.body.email, req.body.password);
+        console.log(token);
         res.status(200).json(token);
     } catch(err) {
         // parsing the error message
         const message = parseError(err);
+        console.log(message);
         // on error - sending status code with the error message
         res.status(401).json({ message: message });
     }
