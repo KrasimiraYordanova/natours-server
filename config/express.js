@@ -1,4 +1,6 @@
 const express = require('express');
+const trim = require('../middlewares/trim');
+const session = require('../middlewares/session');
 
 function templateConfig(app) {
 
@@ -11,6 +13,8 @@ function templateConfig(app) {
 
         next();
     })
+    app.use(trim());
+    app.use(session());
 
 }
 
