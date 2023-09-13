@@ -1,5 +1,5 @@
 const authController = require("../controllers/authController");
-const dataController = require("../controllers/dataController");
+const tourController = require("../controllers/tourController");
 
 function routers(app) {
   app.get("/", (req, res) => {
@@ -7,7 +7,7 @@ function routers(app) {
   });
 
   app.use('/users', authController);
-  app.use('/data/tours', dataController);
+  app.use('/data/tours', tourController);
 }
 
 module.exports = routers;

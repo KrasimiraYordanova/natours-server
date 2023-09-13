@@ -11,13 +11,3 @@ function parseError(error) {
 module.exports = {
     parseError
 }
-
-function parseError(error) {
-    if (error.name == "ValidationError") {
-      return Object.values(error.errors).map((value) => value.message);
-    } else if (Array.isArray(error)) {
-      return error.map((err) => err.msg).join('\n');
-    } else {
-      return error.message.split("\n");
-    }
-  }
