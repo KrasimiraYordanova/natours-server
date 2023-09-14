@@ -1,3 +1,6 @@
+// const dotenv = require("dotenv");
+// dotenv.config({ path: "./config.env" });
+
 const mongoose = require("mongoose");
 
 const CONNECTION_STRING = "mongodb://127.0.0.1:27017/natours";

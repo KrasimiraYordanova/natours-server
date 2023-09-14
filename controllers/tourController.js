@@ -13,7 +13,7 @@ tourController.get('/', async (req, res) => {
     } else {
         tours = await getTours();
     }
-    res.status(200).json(tours);
+    res.status(200).json({status: 'success', results: tours.length, tours});
 })
 
 tourController.post('/', hasUser(), async (req, res) => {

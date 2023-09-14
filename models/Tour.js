@@ -12,6 +12,7 @@ const tourSchema = new Schema({
     minlength: [10, "Tour name must be 10 characters min"],
   },
   slug: String,
+  rating: Number,
   description: {
     type: String,
     trim: true,
