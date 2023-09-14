@@ -1,8 +1,9 @@
 const Tour = require("../models/Tour");
 
 // all tours
-async function getTours() {
-  return Tour.find({});
+async function getTours(queryObj) {
+  const query = Tour.find(queryObj);
+  return query;
 }
 // tours by user Id
 async function getToursByUserId(userId) {

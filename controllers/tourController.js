@@ -11,9 +11,17 @@ tourController.get('/', async (req, res) => {
         const userId = JSON.parse(req.query.where.split('=')[1]);
         tours = await getToursByUserId(userId);
     } else {
-        tours = await getTours();
+        const queryObj = {...req.query};
+        const excludedFields = ['page', 'sort', 'limit', 'fields'];
+        excludedFields.forEach(el => delete queryObj[el]);
+
+        console.log(req.query, queryObj);
+
+        tours = await getTours(queryObj);
+        console.log(tours);
+        // tours = await getTours();
+        res.status(200).json({status: 'success', results: tours.length, tours: tours});
     }
-    res.status(200).json({status: 'success', results: tours.length, tours});
 })
 
 tourController.post('/', hasUser(), async (req, res) => {

@@ -1,6 +1,9 @@
-const { model, Schema, Types: { ObjectId } } = require("mongoose");
+const {
+  model,
+  Schema,
+  Types: { ObjectId },
+} = require("mongoose");
 const slugify = require("slugify");
-
 
 const tourSchema = new Schema({
   name: {
@@ -12,7 +15,14 @@ const tourSchema = new Schema({
     minlength: [10, "Tour name must be 10 characters min"],
   },
   slug: String,
-  rating: Number,
+  ratingAverage: {
+    type: Number,
+    default: 4.5
+  },
+  ratingQuantity: {
+    type: Number,
+    default: 0
+  },
   description: {
     type: String,
     trim: true,
@@ -29,6 +39,11 @@ const tourSchema = new Schema({
     type: Number,
     required: [true, "A tour must have a duration"],
   },
+  summary: {
+    type: String,
+    required: [true, "A tour must have a summary"],
+    trim: true
+  },
   difficulty: {
     type: String,
     required: [true, "A tour must have a difficulty"],
@@ -40,23 +55,29 @@ const tourSchema = new Schema({
   price: {
     type: Number,
     required: [true, "A tour must have a price"],
-    min: [1, 'Price must be a valid positive number']
+    min: [1, "Price must be a valid positive number"],
   },
+  priceDiscount: Number,
   maxGroupSize: {
     type: Number,
     required: [true, "A tour must have a group size"],
   },
   _ownerId: {
-    type: ObjectId, 
-    ref: 'User', 
-    required: true
-  }
-//   imageCover: {
-//     type: String,
-//     required: [true, "A tour must have a cover image"],
-//   },
+    type: ObjectId,
+    ref: "User",
+    required: true,
+  },
+    imageCover: {
+      type: String,
+      required: [true, "A tour must have a cover image"],
+    },
+    images: [String],
+    createdAt: {
+      type: Date,
+      default: Date.now
+    },
+    startDates: [Date]
 });
-
 
 // DOCUMENT MIDDLEWARE: runs before .save() and .create()
 tourSchema.pre("save", function (next) {
@@ -64,5 +85,5 @@ tourSchema.pre("save", function (next) {
   next();
 });
 
-const Tour = model('Tour', tourSchema);
+const Tour = model("Tour", tourSchema);
 module.exports = Tour;
