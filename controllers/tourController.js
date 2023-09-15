@@ -18,13 +18,13 @@ tourController.get("/", async (req, res) => {
       const userId = JSON.parse(req.query.where.split("=")[1]);
       tours = await getToursByUserId(userId);
     } else {
-      // filtering
+      // 1. filtering
       const queryObj = { ...req.query };
       const excludedFields = ["page", "sort", "limit", "fields"];
       excludedFields.forEach((el) => delete queryObj[el]);
-      // console.log(req.query, queryObj);
+      //   console.log(req.query, queryObj);
 
-      // advanced filtering
+      // 2. advanced filtering
       // - converting the object to a string to be able to use the replace method
       let queryString = JSON.stringify(queryObj);
       // console.log(queryObj);
@@ -32,9 +32,29 @@ tourController.get("/", async (req, res) => {
         /\b(gte|gt|lte|lt)\b/g,
         (match) => `$${match}`
       );
-      console.log(JSON.parse(queryString));
+      //   console.log(JSON.parse(queryString));
 
-      tours = await getTours(JSON.parse(queryString));
+      let specialQuery = {};
+      // 3. Sorting
+      if (req.query.sort) {
+        specialQuery = req.query.sort.split(",").join(" ");
+        console.log(specialQuery);
+        tours = await getTours(JSON.parse(queryString), { sort: specialQuery });
+      }
+      // 4. Limiting
+      else if (req.query.fields) {
+        specialQuery = req.query.fields.split(",").join(" ");
+        console.log(specialQuery);
+        tours = await getTours(JSON.parse(queryString), { limitedFields: specialQuery });
+      } else {
+        // 5. Pagination
+        const page = req.query.page * 1 || 1;
+        const limitPerPage = req.query.limit * 1 || 10;
+        const skipedItems = (page - 1) * limitPerPage;
+
+        tours = await getTours(JSON.parse(queryString), {skip: skipedItems, limit: limitPerPage});
+      }
+
       // tours = await getTours();
     }
     res
@@ -71,12 +91,12 @@ tourController.get("/:id", async (req, res) => {
 
 tourController.put("/:id", hasUser(), async (req, res) => {
   const tour = await getTourById(req.params.id);
-  if (req.user._id == tour._ownerId) {
+  if (req.user._id != tour._ownerId) {
     res.status(403).json({ message: "You cannot modify this record" });
   }
   try {
     const tour = await updateTour(req.params.id, req.body);
-    res.json(tour);
+    res.status(400).json(tour);
   } catch (err) {
     const message = parseError(err);
     res.status(400).json({ message: message });

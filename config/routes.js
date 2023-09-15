@@ -8,6 +8,9 @@ function routers(app) {
 
   app.use('/users', authController);
   app.use('/data/tours', tourController);
+  app.use('/*', () => {
+    console.log("Page not found");
+  })
 }
 
 module.exports = routers;
