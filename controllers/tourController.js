@@ -14,49 +14,55 @@ const { parseError } = require("../util/parser");
 tourController.get("/", async (req, res) => {
   let tours = [];
   try {
-    if (req.query.where) {
-      const userId = JSON.parse(req.query.where.split("=")[1]);
-      tours = await getToursByUserId(userId);
-    } else {
-      // 1. filtering
-      const queryObj = { ...req.query };
-      const excludedFields = ["page", "sort", "limit", "fields"];
-      excludedFields.forEach((el) => delete queryObj[el]);
-      //   console.log(req.query, queryObj);
+    // if (req.query.where) {
+    //   const userId = JSON.parse(req.query.where.split("=")[1]);
+    //   tours = await getToursByUserId(userId);
+    // }
 
-      // 2. advanced filtering
-      // - converting the object to a string to be able to use the replace method
-      let queryString = JSON.stringify(queryObj);
-      // console.log(queryObj);
-      queryString = queryString.replace(
-        /\b(gte|gt|lte|lt)\b/g,
-        (match) => `$${match}`
-      );
-      //   console.log(JSON.parse(queryString));
+    // 1.A filtering
+    const queryObj = { ...req.query };
+    const excludedFields = ["page", "sort", "limit", "fields"];
+    excludedFields.forEach((el) => delete queryObj[el]);
+    console.log(req.query, queryObj);
 
-      let specialQuery = {};
-      // 3. Sorting
+    // 1.B advanced filtering
+    // - converting the object to a string to be able to use the replace method
+    let queryString = JSON.stringify(queryObj);
+    queryString = queryString.replace(
+      /\b(gte|gt|lte|lt)\b/g,
+      (match) => `$${match}`
+    );
+    // console.log(JSON.parse(queryString));
+
+    tours = getTours(JSON.parse(queryString));
+    let queries = [{}];
+
+    // 2. sorting
+
+    if (req.query.sort || req.query.fields || req.query.page || req.query.limit) {
       if (req.query.sort) {
-        specialQuery = req.query.sort.split(",").join(" ");
-        console.log(specialQuery);
-        tours = await getTours(JSON.parse(queryString), { sort: specialQuery });
+        const sortQuery = req.query.sort.split(",").join(" ");
+        queries.push({ sort: sortQuery });
       }
-      // 4. Limiting
-      else if (req.query.fields) {
-        specialQuery = req.query.fields.split(",").join(" ");
-        console.log(specialQuery);
-        tours = await getTours(JSON.parse(queryString), { limitedFields: specialQuery });
-      } else {
-        // 5. Pagination
-        const page = req.query.page * 1 || 1;
-        const limitPerPage = req.query.limit * 1 || 10;
-        const skipedItems = (page - 1) * limitPerPage;
-
-        tours = await getTours(JSON.parse(queryString), {skip: skipedItems, limit: limitPerPage});
+      console.log(queries);
+      // 3. fields limit
+      if (req.query.fields) {
+        const fieldsQuery = req.query.fields.split(",").join(" ");
+        queries.push({ fields: fieldsQuery });
       }
-
-      // tours = await getTours();
+      console.log(queries);
+      // 4. pagination
+      if (req.query.page || req.query.limit) { 
+        let page = req.query.page * 1 || 1;
+        let limit = req.query.limit * 1 || 90;
+        let skip = (page - 1) * limit;
+        queries.push({ skip }, { limit });
+      }
+      console.log(queries);
+      tours = getTours(JSON.parse(queryString), queries);
     }
+
+    tours = await tours;
     res
       .status(200)
       .json({ status: "success", results: tours.length, tours: tours });

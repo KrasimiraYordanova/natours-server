@@ -1,21 +1,22 @@
 const Tour = require("../models/Tour");
 
 // all tours
-async function getTours(queryString, specialQuery) {
-  let query = Tour.find(queryString);
-  if (specialQuery) {
-    if (specialQuery.sort) {
-      query = query.sort(specialQuery.sort);
-    } else if (specialQuery.limitedFields) {
-      query = query.select(specialQuery.limitedFields);
-    } else {
-      query = Tour.find(queryString)
-        .sort("-createdAt")
-        .skip(specialQuery.skip)
-        .limit(specialQuery.limit);
+async function getTours(queryString, queries) {
+  let tours = Tour.find(queryString);
+  if (queries) {
+    for (let query of queries) {
+      if (query.sort) {
+        tours = tours.sort(query.sort);
+      } else if (query.fields) {
+        tours = tours.select(query.fields);
+      } else if (query.skip) {
+        tours = tours.skip(query.skip);
+      } else if (query.limit) {
+        tours = tours.limit(query.limit);
+      }
     }
   }
-  return query;
+  return tours;
 }
 // tours by user Id
 async function getToursByUserId(userId) {
