@@ -8,6 +8,7 @@ const {
   updateTour,
   deleteTour,
   aggregatingTourStats,
+  getMonthlyPlan,
 } = require("../services/tourService");
 const { parseError } = require("../util/parser");
 
@@ -76,12 +77,26 @@ tourController.get("/", async (req, res) => {
   }
 });
 
-tourController.get('/tour-stats', async(req, res) => {
+tourController.get("/tour-stats", async (req, res) => {
   try {
     const stats = await aggregatingTourStats();
     res.status(200).json({ status: "success", stats });
   } catch (err) {
-    res.status(404).json({ status: "fail", message: err, message2: 'err message missing' });
+    res
+      .status(404)
+      .json({ status: "fail", message: err });
+  }
+});
+
+tourController.get("/monthly-plan/:year", async (req, res) => {
+  try {
+    const year = req.params.year * 1;
+    const plan = await getMonthlyPlan(year);
+    res.status(200).json({ status: "success", plan });
+  } catch (err) {
+    res
+      .status(404)
+      .json({ status: "fail", message: err });
   }
 });
 

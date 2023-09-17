@@ -49,29 +49,69 @@ async function deleteTour(id) {
 
 // aggregating tour stats
 async function aggregatingTourStats() {
-  return tourStats = Tour.aggregate([
+  return (tourStats = Tour.aggregate([
     {
-      $match: { ratingAverage: { $gte: 4 } } 
+      $match: { ratingAverage: { $gte: 4 } },
     },
     {
-      $group: { 
-        _id: { $toUpper: '$difficulty'},
+      $group: {
+        _id: { $toUpper: "$difficulty" },
         // _id: '$ratingAverage',
         numTours: { $sum: 1 },
-        numRatings: { $sum: '$ratingQuantity' },
-        avgRating: { $avg: '$ratingAverage'},
-        avgPrice: { $avg: '$price' },
-        minPrice: { $min: '$price'},
-        maxPrice: { $max: '$price'},
-       }
+        numRatings: { $sum: "$ratingQuantity" },
+        avgRating: { $avg: "$ratingAverage" },
+        avgPrice: { $avg: "$price" },
+        minPrice: { $min: "$price" },
+        maxPrice: { $max: "$price" },
+      },
     },
     {
-      $sort: { avgPrice: -1 }
+      $sort: { avgPrice: -1 },
     },
     // {
     //   $match: { _id: { $ne: 'MEDIUM' } }
     // }
-  ]);
+  ]));
+}
+
+async function getMonthlyPlan(year) {
+  return (monthlyPlan = Tour.aggregate([
+    {
+      $unwind: "$startDates",
+    },
+    {
+      $match: {
+        startDates: {
+          $gte: new Date(`${year}-01-01`),
+          $lte: new Date(`${year}-12-31`),
+        },
+      },
+    },
+    {
+      // grouping by month - extracting the month with $month operator from the date field
+      $group: {
+        _id: { $month: '$startDates' },
+        // number of tours in a given month
+        numToursOfGivenMonth: { $sum: 1 },
+        // which tours are in this month, need to be an array thats the way to specify few tours 
+        toursOfMonth: { $push: '$name'}
+      },
+    },
+    // adding a new field
+    {
+      $addFields: { month: '$_id'}
+    },
+    // removing the _id field, adding _id: 1
+    {
+      $project: { _id: 0 }
+    },
+    {
+      $sort: { numToursOfGivenMonth: -1}
+    },
+    // {
+    //   $limit: 6
+    // }
+  ]));
 }
 
 module.exports = {
@@ -82,4 +122,5 @@ module.exports = {
   updateTour,
   deleteTour,
   aggregatingTourStats,
+  getMonthlyPlan,
 };
