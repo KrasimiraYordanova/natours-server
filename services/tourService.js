@@ -47,6 +47,33 @@ async function deleteTour(id) {
   return Tour.findByIdAndDelete(id);
 }
 
+// aggregating tour stats
+async function aggregatingTourStats() {
+  return tourStats = Tour.aggregate([
+    {
+      $match: { ratingAverage: { $gte: 4 } } 
+    },
+    {
+      $group: { 
+        _id: { $toUpper: '$difficulty'},
+        // _id: '$ratingAverage',
+        numTours: { $sum: 1 },
+        numRatings: { $sum: '$ratingQuantity' },
+        avgRating: { $avg: '$ratingAverage'},
+        avgPrice: { $avg: '$price' },
+        minPrice: { $min: '$price'},
+        maxPrice: { $max: '$price'},
+       }
+    },
+    {
+      $sort: { avgPrice: -1 }
+    },
+    // {
+    //   $match: { _id: { $ne: 'MEDIUM' } }
+    // }
+  ]);
+}
+
 module.exports = {
   getTours,
   getToursByUserId,
@@ -54,4 +81,5 @@ module.exports = {
   createTour,
   updateTour,
   deleteTour,
+  aggregatingTourStats,
 };

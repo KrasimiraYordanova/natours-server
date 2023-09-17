@@ -7,7 +7,7 @@ const {
   getTourById,
   updateTour,
   deleteTour,
-  getToursByUserId,
+  aggregatingTourStats,
 } = require("../services/tourService");
 const { parseError } = require("../util/parser");
 
@@ -39,7 +39,12 @@ tourController.get("/", async (req, res) => {
 
     // 2. sorting
 
-    if (req.query.sort || req.query.fields || req.query.page || req.query.limit) {
+    if (
+      req.query.sort ||
+      req.query.fields ||
+      req.query.page ||
+      req.query.limit
+    ) {
       if (req.query.sort) {
         const sortQuery = req.query.sort.split(",").join(" ");
         queries.push({ sort: sortQuery });
@@ -52,7 +57,7 @@ tourController.get("/", async (req, res) => {
       }
       console.log(queries);
       // 4. pagination
-      if (req.query.page || req.query.limit) { 
+      if (req.query.page || req.query.limit) {
         let page = req.query.page * 1 || 1;
         let limit = req.query.limit * 1 || 90;
         let skip = (page - 1) * limit;
@@ -68,6 +73,15 @@ tourController.get("/", async (req, res) => {
       .json({ status: "success", results: tours.length, tours: tours });
   } catch (err) {
     console.log(err);
+  }
+});
+
+tourController.get('/tour-stats', async(req, res) => {
+  try {
+    const stats = await aggregatingTourStats();
+    res.status(200).json({ status: "success", stats });
+  } catch (err) {
+    res.status(404).json({ status: "fail", message: err, message2: 'err message missing' });
   }
 });
 
@@ -102,7 +116,7 @@ tourController.put("/:id", hasUser(), async (req, res) => {
   }
   try {
     const tour = await updateTour(req.params.id, req.body);
-    res.status(400).json(tour);
+    res.status(200).json(tour);
   } catch (err) {
     const message = parseError(err);
     res.status(400).json({ message: message });
