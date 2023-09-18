@@ -82,9 +82,7 @@ tourController.get("/tour-stats", async (req, res) => {
     const stats = await aggregatingTourStats();
     res.status(200).json({ status: "success", stats });
   } catch (err) {
-    res
-      .status(404)
-      .json({ status: "fail", message: err });
+    res.status(404).json({ status: "fail", message: err });
   }
 });
 
@@ -94,14 +92,18 @@ tourController.get("/monthly-plan/:year", async (req, res) => {
     const plan = await getMonthlyPlan(year);
     res.status(200).json({ status: "success", plan });
   } catch (err) {
-    res
-      .status(404)
-      .json({ status: "fail", message: err });
+    res.status(404).json({ status: "fail", message: err });
   }
 });
 
-tourController.post("/", hasUser(), async (req, res) => {
+tourController.post("/", async (req, res) => {
   try {
+
+    // req
+    //   .check("name")
+    //   .matches(/^[A-Za-z\s]+$/)
+    //   .withMessage("Name must be alphabetic.");
+
     let tour = Object.assign(
       { _ownerId: "6501a303154f3cfe39f95bb5" },
       req.body
@@ -124,7 +126,7 @@ tourController.get("/:id", async (req, res) => {
   }
 });
 
-tourController.put("/:id", hasUser(), async (req, res) => {
+tourController.put("/:id", async (req, res) => {
   const tour = await getTourById(req.params.id);
   if (req.user._id != tour._ownerId) {
     res.status(403).json({ message: "You cannot modify this record" });

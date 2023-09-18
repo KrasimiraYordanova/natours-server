@@ -32,6 +32,8 @@ async function createTour(tour) {
 }
 // edit
 async function updateTour(id, updatedTour) {
+  // so mongoose validators can valid the new changes, othewise they will accept the changes even if they are wrong - findByIdAndUpdate method
+  // const tour = Tour.findByIdAndUpdate(id, updatedTour, { new: true, runValidators: true });
   const tour = await Tour.findById(id);
   tour.name = updatedTour.name;
   tour.description = updatedTour.description;

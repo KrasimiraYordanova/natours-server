@@ -4,6 +4,7 @@ const {
   Types: { ObjectId },
 } = require("mongoose");
 const slugify = require("slugify");
+const validator = require('validator');
 
 const tourSchema = new Schema(
   {
@@ -14,11 +15,14 @@ const tourSchema = new Schema(
       trim: true,
       maxlength: [40, "Tour name must be 40 characters max"],
       minlength: [10, "Tour name must be 10 characters min"],
+      // validator: [validator.isAlpha, 'Tour name must only contain characters']
     },
     slug: String,
     ratingAverage: {
       type: Number,
       default: 4.5,
+      min: [1, "Rating must be above 1"],
+      max: [5, "Rating must be below 6"],
     },
     ratingQuantity: {
       type: Number,
@@ -48,6 +52,7 @@ const tourSchema = new Schema(
     difficulty: {
       type: String,
       required: [true, "A tour must have a difficulty"],
+      // passing values that are allowed
       enum: {
         values: ["easy", "medium", "difficult"],
         message: "Difficulty is either: easy, medium, difficult",
@@ -58,7 +63,17 @@ const tourSchema = new Schema(
       required: [true, "A tour must have a price"],
       min: [1, "Price must be a valid positive number"],
     },
-    priceDiscount: Number,
+    priceDiscount: {
+      type: Number,
+      // custom validation to see if the discount price is less than the regular price
+      validate: {
+        validator: function (discountPrice) {
+          // inside a validator function the 'this' here will work, point to the current document, only when we create the document, but not when we udate it
+          return discountPrice < this.price;
+        },
+        message: 'Discount price ({VALUE}) must be less than the regular price'
+      },
+    },
     maxGroupSize: {
       type: Number,
       required: [true, "A tour must have a group size"],
@@ -95,7 +110,7 @@ tourSchema.virtual("durationWeeks").get(function () {
   return this.duration / 7;
 });
 
-// DOCUMENT MIDDLEWARE: runs before - the actual document is saved to the database - .save() and .create() (only on those two)
+// DOCUMENT MIDDLEWARE: runs before - the actual document is saved to the database - .save() and .create() (only on those two), not on update()
 tourSchema.pre("save", function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
@@ -127,13 +142,13 @@ tourSchema.post(/^find/, function (doc, next) {
 
 // AGGREGATION MIDDLEWARE
 // excluding the aggregation middleware for secret tour so we don't have to repeat the code
-tourSchema.pre('aggregate', function(next) {
-  // an array from which we put in front another match
+tourSchema.pre("aggregate", function (next) {
+  // an array from which we put in front another $match
   console.log(this.pipeline());
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true }}})
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
   console.log(this.pipeline());
   next();
-})
+});
 
 const Tour = model("Tour", tourSchema);
 module.exports = Tour;
