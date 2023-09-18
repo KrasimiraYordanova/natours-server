@@ -1,7 +1,6 @@
 const authController = require("../controllers/authController");
 const tourController = require("../controllers/tourController");
 const globalError = require("../middlewares/globalError");
-const topTours = require("../middlewares/topTours");
 const AppError = require("../util/appError");
 
 function routers(app) {

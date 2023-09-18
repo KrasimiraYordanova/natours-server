@@ -1,5 +1,6 @@
 const tourController = require("express").Router();
 
+const { catchAsync } = require("../middlewares/catchAsync");
 const { hasUser } = require("../middlewares/guards");
 const {
   getTours,
@@ -96,25 +97,23 @@ tourController.get("/monthly-plan/:year", async (req, res) => {
   }
 });
 
-tourController.post("/", async (req, res) => {
-  try {
-
-    // req
-    //   .check("name")
-    //   .matches(/^[A-Za-z\s]+$/)
-    //   .withMessage("Name must be alphabetic.");
-
+tourController.post(
+  "/", hasUser,
+  catchAsync(async (req, res) => {
+    // try {
+    // TODO - check if the name is alphanumeric
     let tour = Object.assign(
       { _ownerId: "6501a303154f3cfe39f95bb5" },
       req.body
     );
     tour = await createTour(tour);
     res.json(tour);
-  } catch (err) {
-    const message = parseError(err);
-    res.status(400).json({ message: message });
-  }
-});
+    // } catch (err) {
+    //   const message = parseError(err);
+    //   res.status(400).json({ message: message });
+    // }
+  })
+);
 
 tourController.get("/:id", async (req, res) => {
   try {
