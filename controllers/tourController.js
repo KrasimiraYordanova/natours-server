@@ -11,6 +11,7 @@ const {
   aggregatingTourStats,
   getMonthlyPlan,
 } = require("../services/tourService");
+const AppError = require("../util/appError");
 const { parseError } = require("../util/parser");
 
 tourController.get("/", async (req, res) => {
@@ -98,7 +99,7 @@ tourController.get("/monthly-plan/:year", async (req, res) => {
 });
 
 tourController.post(
-  "/", hasUser,
+  "/", 
   catchAsync(async (req, res) => {
     // try {
     // TODO - check if the name is alphanumeric
@@ -115,29 +116,41 @@ tourController.post(
   })
 );
 
-tourController.get("/:id", async (req, res) => {
-  try {
+tourController.get("/:id", catchAsync(async (req, res, next) => {
+  // try {
     let tour = await getTourById(req.params.id);
-    res.json(tour);
-  } catch (err) {
-    const message = parseError(err);
-    res.status(400).json({ message: message });
-  }
-});
 
-tourController.put("/:id", async (req, res) => {
-  const tour = await getTourById(req.params.id);
-  if (req.user._id != tour._ownerId) {
-    res.status(403).json({ message: "You cannot modify this record" });
-  }
-  try {
+    if(!tour) {
+      return next(new AppError('The tour with the id does not exist', 404));
+    }
+
+    res.status(200).json({ message: "success", tour});
+  // } catch (err) {
+  //   const message = parseError(err);
+  //   res.status(400).json({ message: message });
+  // }
+}));
+
+tourController.put("/:id", catchAsync(async (req, res) => {
+  console.log(req.params.id);
+  console.log(req.body);
+  // const tour = await getTourById(req.params.id);
+  // if (req.user._id != tour._ownerId) {
+  //   res.status(403).json({ message: "You cannot modify this record" });
+  // }
+  // try {
     const tour = await updateTour(req.params.id, req.body);
+
+    if(!tour) {
+      return next(new AppError('The tour with the id does not exist', 404));
+    }
+
     res.status(200).json(tour);
-  } catch (err) {
-    const message = parseError(err);
-    res.status(400).json({ message: message });
-  }
-});
+  // } catch (err) {
+  //   const message = parseError(err);
+  //   res.status(400).json({ message: message });
+  // }
+}));
 
 tourController.delete("/:id", hasUser, async (req, res) => {
   const tour = await getTourById(req.params.id);
@@ -145,7 +158,12 @@ tourController.delete("/:id", hasUser, async (req, res) => {
     res.status(403).json({ message: "You cannot modify this record" });
   }
   try {
-    await deleteTour(req.params.id);
+    const tour = await deleteTour(req.params.id);
+    
+    if(!tour) {
+      return next(new AppError('The tour with the id does not exist', 404));
+    }
+
     res.status(204).end();
   } catch (err) {
     const message = parseError(err);

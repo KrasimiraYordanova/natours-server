@@ -41,6 +41,7 @@ async function updateTour(id, updatedTour) {
   tour.difficulty = updatedTour.difficulty;
   tour.price = updatedTour.price;
   tour.maxGroupSize = updatedTour.maxGroupSize;
+  tour.ratingAverage = updatedTour.ratingAverage;
 
   return tour.save();
 }
