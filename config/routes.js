@@ -1,3 +1,5 @@
+const morgan = require("morgan");
+
 const authController = require("../controllers/authController");
 const tourController = require("../controllers/tourController");
 const globalError = require("../middlewares/globalError");
@@ -7,11 +9,15 @@ function routers(app) {
   // app.get("/", (req, res) => {
   //   res.json({ message: 'REST service operational' });
   // });
+  // console.log(process.env.NODE_ENV);
+  if (process.env.NODE_ENV === "development") {
+    app.use(morgan("dev"));
+  }
 
-  app.use('/users', authController);
-  app.use('/data/tours', tourController);
+  app.use("/users", authController);
+  app.use("/data/tours", tourController);
 
-  app.all('*', (req, res, next) => {
+  app.all("*", (req, res, next) => {
     // res.status(404).json({status:"fail", message: `Can't find ${req.originalUrl} on this server`});
 
     // const err = new Error(`Can't find ${req.originalUrl} on this server!`);
@@ -19,11 +25,12 @@ function routers(app) {
     // err.statusCode = 404;
     // next(err);
 
+    // invalid routes error handler
     next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
-  })
+  });
 
   // Global Error Handling Middleware
-  // to define a error handling middlware all we need to do is to give the middlware function 4 arguments and express
+  // to define an error handling middlware all we need to do is to give the middlware function 4 arguments and express
   // will authomatically recognise it as an error handling middlware therefore calling it only when an error occurs
   app.use(globalError);
 }

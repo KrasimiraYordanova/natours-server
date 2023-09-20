@@ -14,7 +14,7 @@ const {
 const AppError = require("../util/appError");
 const { parseError } = require("../util/parser");
 
-tourController.get("/", async (req, res) => {
+tourController.get("/", async (req, res, next) => {
   let tours = [];
   try {
     // if (req.query.where) {
@@ -79,78 +79,54 @@ tourController.get("/", async (req, res) => {
   }
 });
 
-tourController.get("/tour-stats", async (req, res) => {
-  try {
-    const stats = await aggregatingTourStats();
-    res.status(200).json({ status: "success", stats });
-  } catch (err) {
-    res.status(404).json({ status: "fail", message: err });
-  }
+tourController.get("/tour-stats", async (req, res, next) => {
+  const stats = await aggregatingTourStats();
+  res.status(200).json({ status: "success", stats });
 });
 
-tourController.get("/monthly-plan/:year", async (req, res) => {
-  try {
-    const year = req.params.year * 1;
-    const plan = await getMonthlyPlan(year);
-    res.status(200).json({ status: "success", plan });
-  } catch (err) {
-    res.status(404).json({ status: "fail", message: err });
-  }
+tourController.get("/monthly-plan/:year", async (req, res, next) => {
+  const year = req.params.year * 1;
+  const plan = await getMonthlyPlan(year);
+  res.status(200).json({ status: "success", plan });
 });
 
 tourController.post(
-  "/", 
-  catchAsync(async (req, res) => {
-    // try {
-    // TODO - check if the name is alphanumeric
+  "/",
+  catchAsync(async (req, res, next) => {
     let tour = Object.assign(
       { _ownerId: "6501a303154f3cfe39f95bb5" },
       req.body
     );
     tour = await createTour(tour);
     res.json(tour);
-    // } catch (err) {
-    //   const message = parseError(err);
-    //   res.status(400).json({ message: message });
-    // }
   })
 );
 
-tourController.get("/:id", catchAsync(async (req, res, next) => {
-  // try {
+tourController.get(
+  "/:id",
+  catchAsync(async (req, res, next) => {
     let tour = await getTourById(req.params.id);
-
-    if(!tour) {
-      return next(new AppError('The tour with the id does not exist', 404));
+    if (!tour) {
+      return next(new AppError("No tour found with that id", 404));
     }
+    res.status(200).json({ message: "success", tour });
+  })
+);
 
-    res.status(200).json({ message: "success", tour});
-  // } catch (err) {
-  //   const message = parseError(err);
-  //   res.status(400).json({ message: message });
-  // }
-}));
-
-tourController.put("/:id", catchAsync(async (req, res) => {
-  console.log(req.params.id);
-  console.log(req.body);
-  // const tour = await getTourById(req.params.id);
-  // if (req.user._id != tour._ownerId) {
-  //   res.status(403).json({ message: "You cannot modify this record" });
-  // }
-  // try {
+tourController.put(
+  "/:id",
+  catchAsync(async (req, res, next) => {
+    // const tour = await getTourById(req.params.id);
+    // if (req.user._id != tour._ownerId) {
+    //   res.status(403).json({ message: "You cannot modify this record" });
+    // }
     const tour = await updateTour(req.params.id, req.body);
-
-    if(!tour) {
-      return next(new AppError('The tour with the id does not exist', 404));
+    if (!tour) {
+      return next(new AppError("No tour found with that id", 404));
     }
-
     res.status(200).json(tour);
-  // } catch (err) {
-  //   const message = parseError(err);
-  //   res.status(400).json({ message: message });
-  // }
-}));
+  })
+);
 
 tourController.delete("/:id", hasUser, async (req, res) => {
   const tour = await getTourById(req.params.id);
@@ -159,9 +135,9 @@ tourController.delete("/:id", hasUser, async (req, res) => {
   }
   try {
     const tour = await deleteTour(req.params.id);
-    
-    if(!tour) {
-      return next(new AppError('The tour with the id does not exist', 404));
+
+    if (!tour) {
+      return next(new AppError("The tour with the id does not exist", 404));
     }
 
     res.status(204).end();

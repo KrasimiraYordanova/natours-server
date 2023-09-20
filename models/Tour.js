@@ -117,7 +117,7 @@ tourSchema.pre("save", function (next) {
 });
 // wa can have multiples pre and post middlewares for the same hook('save')
 tourSchema.post("save", function (savedDocument, next) {
-  console.log(savedDocument);
+  // console.log(savedDocument);
   next();
 });
 
@@ -134,9 +134,9 @@ tourSchema.pre(/^find/, function (next) {
 });
 tourSchema.post(/^find/, function (doc, next) {
   // catching the value from 'pre' query middleware
-  console.log(`Query took ${Date.now() - this.start} milliseconds!`);
+  // console.log(`Query took ${Date.now() - this.start} milliseconds!`);
 
-  console.log(doc);
+  // console.log(doc);
   next();
 });
 
@@ -144,9 +144,9 @@ tourSchema.post(/^find/, function (doc, next) {
 // excluding the aggregation middleware for secret tour so we don't have to repeat the code
 tourSchema.pre("aggregate", function (next) {
   // an array from which we put in front another $match
-  console.log(this.pipeline());
+  // console.log(this.pipeline());
   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-  console.log(this.pipeline());
+  // console.log(this.pipeline());
   next();
 });
 

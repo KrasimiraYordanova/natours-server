@@ -6,6 +6,7 @@ class AppError extends Error {
         this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
         this.isOperational = true;
 
+        // We also need to capture stack trace - the big, fat error message; and exclude this class from the rror stack(not to appear)
         Error.captureStackTrace(this, this.constructor);
     }
 }

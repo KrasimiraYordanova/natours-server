@@ -4,9 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js",
-    "start:prod": "NODE_DEV=production nodemon index.js",
-    "debug": "ndb index.js"
+    "start": "SET NODE_ENV=development&&nodemon index.js",
+    "start:prod": "SET NODE_ENV=production&&nodemon index.js"
   },
   "keywords": [],
   "author": "",
@@ -18,11 +17,9 @@
     "express-validator": "^7.0.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.5.1",
+    "morgan": "^1.10.0",
     "nodemon": "^3.0.1",
     "slugify": "^1.6.6",
     "validator": "^13.11.0"
-  },
-  "devDependencies": {
-    "ndb": "^1.1.5"
   }
 }
