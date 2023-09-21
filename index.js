@@ -8,8 +8,7 @@ start();
 
 async function start() {
   process.on("uncaughtException", (err) => {
-    console.log(err.name, err.message);
-    // server closing giving it time to finish all pending request or being handles at the time
+    console.log(err.name, err.message);  
     process.exit(1);
   });
 

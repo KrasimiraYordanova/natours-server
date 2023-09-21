@@ -1,5 +1,6 @@
 const tourController = require("express").Router();
 
+const AppError = require("../util/appError");
 const { catchAsync } = require("../middlewares/catchAsync");
 const { hasUser } = require("../middlewares/guards");
 const {
@@ -11,8 +12,6 @@ const {
   aggregatingTourStats,
   getMonthlyPlan,
 } = require("../services/tourService");
-const AppError = require("../util/appError");
-const { parseError } = require("../util/parser");
 
 tourController.get("/", async (req, res, next) => {
   let tours = [];
@@ -98,7 +97,7 @@ tourController.post(
       req.body
     );
     tour = await createTour(tour);
-    res.json(tour);
+    res.statusCode(200).json(tour);
   })
 );
 
@@ -129,22 +128,16 @@ tourController.put(
 );
 
 tourController.delete("/:id", hasUser, async (req, res) => {
-  const tour = await getTourById(req.params.id);
-  if (req.user._id == tour._ownerId) {
-    res.status(403).json({ message: "You cannot modify this record" });
-  }
-  try {
-    const tour = await deleteTour(req.params.id);
+  // const tour = await getTourById(req.params.id);
+  // if (req.user._id == tour._ownerId) {
+  //   res.status(403).json({ message: "You cannot modify this record" });
+  // }
 
+    const tour = await deleteTour(req.params.id);
     if (!tour) {
       return next(new AppError("The tour with the id does not exist", 404));
     }
-
     res.status(204).end();
-  } catch (err) {
-    const message = parseError(err);
-    res.status(400).json({ message: message });
-  }
 });
 
 module.exports = tourController;

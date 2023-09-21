@@ -8,17 +8,17 @@ function handleCastErrorDB(err) {
 
 // handling errors that comes from mondoDB with the same unique identifier
 function handleDuplicataDB(err) {
-  const value = err.errmsg.match(/["'](\\?.)*?\1/)[0];
-  const message = `Duplicate field value: ${value}. Please try another value`;
+  const [errorInfo] = Object.entries(err.keyValue);
+  const value = errorInfo[1];
+  const message = `Duplicate field: ${value}. Please try another value`;
   return new AppError(message, 400);
 }
 
 // handling validation errors for mode prod - function
 function handleValidationErrorDB(err) {
-  const values = Object.values(err.errors)
-    .map((value) => value.message)
-    .join("\n");
-  const message = `Invalid input data: ${values}`;
+  console.log(err.errors);
+  const values = Object.values(err.errors).map((value) => value.message);
+  const message = `Invalid input data: ${values.join("\n")}`;
   return new AppError(message, 400);
 }
 
@@ -31,6 +31,7 @@ function handleExpressValidatorErrorDB(err) {
 
 // Errors to be displayed when in dev mode - function
 function sendErrorDev(err, res) {
+  console.log(err);
   res.status(err.statusCode).json({
     status: err.status,
     error: err,
@@ -42,7 +43,7 @@ function sendErrorDev(err, res) {
 // Errors to be displayed when in prod mode - function
 function sendErrorProd(err, res) {
   if (err.isOperational) {
-    res.status(res.statusCode).json({
+    res.status(err.statusCode).json({
       status: err.status,
       message: err.message,
     });
@@ -59,7 +60,7 @@ function sendErrorProd(err, res) {
 }
 
 module.exports = (err, req, res, next) => {
-  // console.log(err.stack);
+  console.log(err);
   // defining a default error, because there will be errors that are not comming from us, there is going to be errors without a status code
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
@@ -70,15 +71,14 @@ module.exports = (err, req, res, next) => {
     let error = { ...err };
     if (error.name === "CastError") {
       error = handleCastErrorDB(error);
-    }
-    if (error.code == 11000) {
+    } else if (error.code === 11000) {
       error = handleDuplicataDB(error);
-    }
-    if (error.name == "ValidationError") {
+    } else if (error.name === "ValidationError") {
       error = handleValidationErrorDB(error);
-    }
-    if (Array.isArray(err)) {
+    } else if (Array.isArray(err)) {
       error = handleExpressValidatorErrorDB(err);
+    } else {
+      error = err;
     }
     sendErrorProd(error, res);
   }

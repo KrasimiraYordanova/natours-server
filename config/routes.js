@@ -6,9 +6,7 @@ const globalError = require("../middlewares/globalError");
 const AppError = require("../util/appError");
 
 function routers(app) {
-  // app.get("/", (req, res) => {
-  //   res.json({ message: 'REST service operational' });
-  // });
+  
   // console.log(process.env.NODE_ENV);
   if (process.env.NODE_ENV === "development") {
     app.use(morgan("dev"));
