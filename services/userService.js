@@ -5,6 +5,13 @@ const AppError = require("../util/appError");
 
 const tokenBlacklist = new Set();
 
+async function getUserId(id) {
+  return User.findOne({_id: id});
+}
+async function getUserEmail(email) {
+  return User.findOne({email: email});
+}
+
 async function register(userObj) {
   // on register - looking to find inside the database if the user exists
   const existingUser = await User.findOne({ email: userObj.email }).collation({
@@ -22,6 +29,7 @@ async function register(userObj) {
   const user = await User.create({
     fullName: userObj.name,
     email: userObj.email,
+    role: userObj.role,
     hashedPass: hashingPass,
   });
   // - creating user token from the saved data
@@ -35,17 +43,17 @@ async function login(email, password) {
     strength: 2,
   });
   // if user's credentials are wrong(email)' - throw error telling the user that email or pass are wrong
-//   if (!user) {
-//     // throw new Error("Email or password are incorrect");
-//     return new AppError("Email or password are incorrect", 400);
-//   }
+  if (!user) {
+    throw new Error("Email or password are incorrect");
+    // return new AppError("Email or password are incorrect", 400);
+  }
   // comparing the user entered password with the hashedPass inside the database to see if they match
-//   const hashMached = await bcrypt.compare(password, user.hashedPass);
+  const hashMached = await bcrypt.compare(password, user.hashedPass);
   // if password does not match with the hashedPass - throwing error
-//   if (!user || hashMached == false) {
-  if (!user || (await bcrypt.compare(password, user.hashedPass))) {
-    // throw new Error("Email or password are incorrect");
-    return new AppError("Email or password are incorrect", 400);
+  if (hashMached == false) {
+  // if (!user || (await bcrypt.compare(password, user.hashedPass))) {
+    return new AppError("Email or password are incorrect", 401);
+    // return new AppError("Email or password are incorrect", 400);
   }
   // if match - return token
   return createToken(user);
@@ -66,16 +74,28 @@ function createToken(user) {
     _id: user._id,
     name: user.fullName,
     email: user.email,
-    accessToken: jwt.sign(payload, process.env.JWT_SECRET),
+    accessToken: jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: '90d'}),
   };
 }
 
 function verifyToken(token) {
   // scan blacklist for token
   if (tokenBlacklist.has(token)) {
-    throw new Error("Token is blacklisted");
+    // throw new Error("Token is blacklisted");
+    return new AppError("Invalid autorization token", 401);
   }
   return jwt.verify(token, process.env.JWT_SECRET);
+}
+
+// edit user
+async function updateUser(id, user) {
+  const existing = await User.findById(id);
+  existing.name = user.fullName;
+  existing.email = user.email;
+  existing.hashedPass = user.password;
+  existing.photo = user.image;
+
+  return existing.save();
 }
 
 module.exports = {
@@ -83,4 +103,7 @@ module.exports = {
   login,
   logout,
   verifyToken,
+  getUserId,
+  getUserEmail,
+  updateUser,
 };

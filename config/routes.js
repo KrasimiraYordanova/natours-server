@@ -4,6 +4,7 @@ const authController = require("../controllers/authController");
 const tourController = require("../controllers/tourController");
 const globalError = require("../middlewares/globalError");
 const AppError = require("../util/appError");
+const userController = require("../controllers/userController");
 
 function routers(app) {
   
@@ -12,7 +13,14 @@ function routers(app) {
     app.use(morgan("dev"));
   }
 
+  app.use((req, res, next) => {
+    req.requestTime = new Date().toISOString();
+    console.log(req.headers);
+    next();
+  })
+
   app.use("/users", authController);
+  app.use("/users", userController);
   app.use("/data/tours", tourController);
 
   app.all("*", (req, res, next) => {

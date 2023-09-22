@@ -1,5 +1,5 @@
 const { Schema, model } = require("mongoose");
-const bcrypt = require('bcrypt');
+const crypto = require("crypto");
 
 const userSchema = new Schema({
   fullName: {
@@ -18,7 +18,14 @@ const userSchema = new Schema({
     type: String,
     required: [true, "Password is required"],
     minlength: 8,
-  }
+  },
+  role: {
+    type: String,
+    enum: ["admin", "user"],
+    default: "user",
+  },
+  passwordResetToken: String,
+  passwordResetTokenExpiration: Date
 });
 
 // userSchema.pre('save', async function(next) {
@@ -26,7 +33,14 @@ const userSchema = new Schema({
 //     this.hashedPass = await bcrypt.hash(this.password, 10);
 // })
 
+userSchema.methods.createPassResetToken = function() {
+  const resetToken = crypto.randomBytes(32).toString('hex');
 
+  this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+  console.log({resetToken}, this.passwordResetToken);
+  this.passwordResetTokenExpiration = Date.now() + 10 * 60 * 1000;
+  return resetToken;
+}
 
 userSchema.index(
   { email: 1 },

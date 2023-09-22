@@ -1,6 +1,11 @@
-const { register, login, logout } = require("../services/userService");
+const {
+  register,
+  login,
+  logout,
+  getUserEmail,
+  updateUser,
+} = require("../services/userService");
 const { body, validationResult } = require("express-validator");
-const { parseError } = require("../util/parser");
 const AppError = require("../util/appError");
 const { catchAsync } = require("../middlewares/catchAsync");
 
@@ -13,10 +18,12 @@ authController.post(
     .isLength({ min: 3 })
     .withMessage("Password must be at least 3 characters long"),
   catchAsync(async (req, res, next) => {
+    console.log(req.body);
     const userObj = {
       name: req.body.name,
       email: req.body.email,
       password: req.body.password,
+      role: req.body.role,
     };
     console.log(userObj);
     // catching the errros from express-validator
@@ -54,5 +61,26 @@ authController.get("/logout", async (req, res) => {
   await logout(token);
   res.status(204).end();
 });
+
+authController.post(
+  "/forgot-password",
+  catchAsync(async (req, res, next) => {
+    // 1. get user based on provided email
+    console.log(req.body);
+    const user = await getUserEmail(req.body.email);
+    console.log(user);
+    if(!user) {
+      return next(new AppError('User with that email does not exist', 404));
+    }
+    // 2. generate a random token
+    const resetToken = user.createPassResetToken();
+    await updateUser(user.id, Object.assign(user, req.body));
+    // await user.save({ validateBeforeSave: false});
+    // 3. send token to user as an email
+
+  })
+);
+
+authController.post("/reset-password", (req, res, next) => {});
 
 module.exports = authController;
