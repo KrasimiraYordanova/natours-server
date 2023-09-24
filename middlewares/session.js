@@ -1,4 +1,4 @@
-const { verifyToken } = require("../services/userService");
+const { verifyToken } = require("../services/authService");
 const { catchAsync } = require("./catchAsync");
 
 module.exports = () =>

@@ -4,7 +4,7 @@ const {
   logout,
   getUserEmail,
   updateUser,
-} = require("../services/userService");
+} = require("../services/authService");
 const { body, validationResult } = require("express-validator");
 const AppError = require("../util/appError");
 const { catchAsync } = require("../middlewares/catchAsync");
@@ -15,8 +15,8 @@ authController.post(
   "/register",
   body("email").isEmail().withMessage("Invalid email"),
   body("password")
-    .isLength({ min: 3 })
-    .withMessage("Password must be at least 3 characters long"),
+    .isLength({ min: 8 })
+    .withMessage("Password must be at least 8 characters long"),
   catchAsync(async (req, res, next) => {
     console.log(req.body);
     const userObj = {
@@ -74,7 +74,8 @@ authController.post(
     }
     // 2. generate a random token
     const resetToken = user.createPassResetToken();
-    await updateUser(user.id, Object.assign(user, req.body));
+    await updateUser(user._id, Object.assign(user, req.body));
+    // validate before save is when the user reset his/her password and provides only the email, so the user don't need to specify the other required fields like name
     // await user.save({ validateBeforeSave: false});
     // 3. send token to user as an email
 

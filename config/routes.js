@@ -19,9 +19,9 @@ function routers(app) {
     next();
   })
 
-  app.use("/users", authController);
+  app.use("/auth", authController);
   app.use("/users", userController);
-  app.use("/data/tours", tourController);
+  app.use("/tours", tourController);
 
   app.all("*", (req, res, next) => {
     // res.status(404).json({status:"fail", message: `Can't find ${req.originalUrl} on this server`});
