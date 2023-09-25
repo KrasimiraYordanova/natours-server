@@ -1,6 +1,6 @@
 const { catchAsync } = require("../middlewares/catchAsync");
 const { hasUser } = require("../middlewares/guards");
-const { getAllUsers, getUserId, updateUser, deleteUserId, updateData } = require("../services/userService");
+const { getAllUsers, getUserId, updateUser, updateData, deactivateAccount } = require("../services/userService");
 const AppError = require("../util/appError");
 
 const userController = require("express").Router();
@@ -57,15 +57,13 @@ userController.put('/:id', catchAsync(async(req, res, next)=> {
     res.status(200).json({ status: "success", user });
 }));
 
-// delete
+// delete my account
 userController.delete('/:id', catchAsync(async(req, res, next) => {
-    // need to check is the user is admin or in case a user wants to delete his/her own account to check his/her id
+    // need to check if the user is admin or in case a user wants to delete his/her own account to check his/her id
     // alert window for confirmation
-    await deleteUserId(req.params.id);
+    await deactivateAccount(req.params.id);
+    res.status(204).json({ status: 'success', data: null });
 }))
-
-
-
 
 
 module.exports = userController;

@@ -21,6 +21,11 @@ async function updateData(id, user) {
   return User.findByIdAndUpdate(id, user, { new: true, runValidators: true });
 }
 
+// close my account
+async function deactivateAccount(id) {
+  return User.findByIdAndUpdate(id, { active: false });
+}
+
 // edit user
 async function updateUser(id, user) {
   const existing = await User.findById(id);
@@ -47,4 +52,5 @@ module.exports = {
   updateUser,
   deleteUserId,
   updateData,
+  deactivateAccount,
 };
