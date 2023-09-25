@@ -16,6 +16,11 @@ async function getUserEmail(email) {
   return User.findOne({ email: email });
 }
 
+// update my data
+async function updateData(id, user) {
+  return User.findByIdAndUpdate(id, user, { new: true, runValidators: true });
+}
+
 // edit user
 async function updateUser(id, user) {
   const existing = await User.findById(id);
@@ -32,7 +37,7 @@ async function updateUser(id, user) {
 
 // delete user
 async function deleteUserId(id) {
-    return User.findByIdAndDelete(id);
+  return User.findByIdAndDelete(id);
 }
 
 module.exports = {
@@ -40,5 +45,6 @@ module.exports = {
   getUserId,
   getUserEmail,
   updateUser,
-  deleteUserId
+  deleteUserId,
+  updateData,
 };

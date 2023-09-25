@@ -44,7 +44,7 @@ async function login(email, password) {
   const hashMached = await bcrypt.compare(password, user.hashedPass);
   // if password does not match with the hashedPass - throwing error
   if (hashMached == false) {
-  // if (!user || (await bcrypt.compare(password, user.hashedPass))) {
+    // if (!user || (await bcrypt.compare(password, user.hashedPass))) {
     return new AppError("Email or password are incorrect", 401);
     // return new AppError("Email or password are incorrect", 400);
   }
@@ -67,7 +67,9 @@ function createToken(user) {
     _id: user._id,
     name: user.fullName,
     email: user.email,
-    accessToken: jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: '90d'}),
+    accessToken: jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "90d",
+    }),
   };
 }
 
@@ -80,9 +82,43 @@ function verifyToken(token) {
   return jwt.verify(token, process.env.JWT_SECRET);
 }
 
+// reset password
+async function updatePassword(id, user) {
+  const existing = await User.findById(id);
+  existing.hashedPass = await bcrypt.hash(user.hashedPass, 10);
+  await existing.save();
+  return createToken(existing);
+}
+
+// save generated token for the user with the provided email(id, user)
+async function saveUserTokenOnEmailProvide(id, user) {
+  const existing = await User.findById(id);
+  existing.email = user.email;
+  return existing.save({ validateBeforeSave: false });
+}
+
+// get user crypted token to compare it with the raw original one
+async function getUserTokenandUpdatePass(token, newPassword) {
+  const user = User.findOne({
+    passwordResetToken: token,
+    passwordResetTokenExpiration: { $gt: Date.now() },
+  });
+  if (!user) {
+    throw new Error("Token does not exist or is expired");
+  }
+  user.hashedPass = await bcrypt.hash(newPassword, 10);
+  user.passwordResetToken = undefined;
+  user.passwordResetTokenExpiration = undefined;
+  user.save();
+  return createToken(user);
+}
+
 module.exports = {
   register,
   login,
   logout,
   verifyToken,
+  updatePassword,
+  saveUserTokenOnEmailProvide,
+  getUserTokenandUpdatePass,
 };

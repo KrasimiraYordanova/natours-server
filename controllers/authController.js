@@ -1,15 +1,24 @@
+const authController = require("express").Router();
+
+const { body, validationResult } = require("express-validator");
+const crypto = require("crypto");
+const bcrypt = require("bcrypt");
+
 const {
   register,
   login,
   logout,
-  getUserEmail,
-  updateUser,
+  getUserTokenandUpdatePass,
+  saveUserTokenOnEmailProvide,
+  updatePassword,
+  updateData,
 } = require("../services/authService");
-const { body, validationResult } = require("express-validator");
-const AppError = require("../util/appError");
-const { catchAsync } = require("../middlewares/catchAsync");
+const { getUserEmail, getUserId } = require("../services/userService");
 
-const authController = require("express").Router();
+const { catchAsync } = require("../middlewares/catchAsync");
+const { hasUser } = require("../middlewares/guards");
+const AppError = require("../util/appError");
+const sendEmail = require("../util/email");
 
 authController.post(
   "/register",
@@ -65,23 +74,85 @@ authController.get("/logout", async (req, res) => {
 authController.post(
   "/forgot-password",
   catchAsync(async (req, res, next) => {
-    // 1. get user based on provided email
     console.log(req.body);
+    // 1. get user based on provided email
     const user = await getUserEmail(req.body.email);
-    console.log(user);
-    if(!user) {
-      return next(new AppError('User with that email does not exist', 404));
+    if (!user) {
+      return next(new AppError("User with that email does not exist", 404));
     }
+
     // 2. generate a random token
     const resetToken = user.createPassResetToken();
-    await updateUser(user._id, Object.assign(user, req.body));
-    // validate before save is when the user reset his/her password and provides only the email, so the user don't need to specify the other required fields like name
+    // validate before save is when the user reset his/her password and provides only the email, so the user don't need to specify the other required fields like name or password
     // await user.save({ validateBeforeSave: false});
-    // 3. send token to user as an email
+    console.log(user);
+    await saveUserTokenOnEmailProvide(user._id, user);
 
+    // 3. send token to user as an email
+    const resetURL = `${req.protocol}://${req.get(
+      "host"
+    )}/auth/reset-password/${resetToken}`;
+    const message = `Forgot your password? Submit a request with your new password and confirm it to: ${resetURL}.\nIf the request is not from you, please ignore this email!`;
+    try {
+      await sendEmail({
+        email: user.email,
+        subject:
+          "Request for password reset: your password reset token (valid for 10 min)",
+        message,
+      });
+      res
+        .status(200)
+        .json({ status: success, message: "Token sent to your email" });
+    } catch (err) {
+      user.passwordResetToken = undefined;
+      user.passwordResetTokenExpiration = undefined;
+      await saveUserTokenOnEmailProvide(user._id, user);
+
+      return next(
+        new AppError("There was an error sending the email. Try again later!"),
+        500
+      );
+    }
   })
 );
 
-authController.post("/reset-password", (req, res, next) => {});
+authController.patch(
+  "/reset-password/:token",
+  catchAsync(async (req, res, next) => {
+    // 1. get user based on token
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(req.params.token)
+      .digest("hex");
+    const token = await getUserTokenandUpdatePass(
+      hashedToken,
+      req.body.password
+    );
+    res.status(200).json(token);
+  })
+);
+
+authController.patch(
+  "/update-password",
+  hasUser(),
+  catchAsync(async (req, res, next) => {
+    // 1. get user from the collection
+    const user = await getUserId(req.user._id);
+    if (req.body.newPassword != req.body.reNewPassword) {
+      return next(new AppError("Passwords don't match", 400));
+    }
+
+    // 2. check if password is correct
+    if (!(await bcrypt.compare(req.body.password, user.hashedPass))) {
+      return next(new AppError("Your current password is wrong", 401));
+    }
+    user.hashedPass = req.body.newPassword;
+    // 3. if so update pass +  // 4. log user in
+    const token = await updatePassword(user._id, user);
+    res.status(200).json(token);
+  })
+);
+
+
 
 module.exports = authController;

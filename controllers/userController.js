@@ -1,5 +1,6 @@
 const { catchAsync } = require("../middlewares/catchAsync");
-const { getAllUsers, getUserId, updateUser, deleteUserId } = require("../services/userService");
+const { hasUser } = require("../middlewares/guards");
+const { getAllUsers, getUserId, updateUser, deleteUserId, updateData } = require("../services/userService");
 const AppError = require("../util/appError");
 
 const userController = require("express").Router();
@@ -9,6 +10,32 @@ userController.get('/', catchAsync(async(req, res, next) => {
     const users = await getAllUsers();
     res.status(200).json({status: 'success', result: users.length, users});
 }))
+
+userController.patch(
+    "/update-data",
+    hasUser(),
+    catchAsync(async (req, res, next) => {
+      if (req.body.password || req.body.repassword) {
+        return next(
+          new AppError(
+            "You cannot modify password. Please use update password link",
+            400
+          )
+        );
+      }
+      const user = await getUserId(req.user._id);
+      if (!user) {
+        return next(new AppError("User does not exist", 400));
+      }
+      const updatedData = {
+        fullName: req.body.name,
+        email: req.body.email,
+      };
+      const updatedUser = await updateData(req.user._id, updatedData);
+  
+      res.status(200).json({ status: "success", updatedUser });
+    })
+  );
 
 // get by id
 userController.get('/:id', catchAsync(async(req, res, next) => {
@@ -36,6 +63,8 @@ userController.delete('/:id', catchAsync(async(req, res, next) => {
     // alert window for confirmation
     await deleteUserId(req.params.id);
 }))
+
+
 
 
 
