@@ -13,16 +13,6 @@ function hasUser() {
   });
 }
 
-function isGuest() {
-  return (req, res, next) => {
-    if (req.user) {
-      res.status(400).json({ message: "You are already logged in" });
-    } else {
-      next();
-    }
-  };
-}
-
 function isRestricted(...role) {
   return catchAsync(async (req, res, next) => {
     console.log(req.user);
@@ -55,6 +45,16 @@ exports.protectionGuardSession = catchAsync(async (req, res, next) => {
   // 5. Check if user has changed password after the JWT was - DEPENDS ON THE LOGIC IMPLEMENTATION
   next();
 });
+
+function isGuest() {
+  return (req, res, next) => {
+    if (req.user) {
+      res.status(400).json({ message: "You are already logged in" });
+    } else {
+      next();
+    }
+  };
+}
 
 module.exports = {
   hasUser,

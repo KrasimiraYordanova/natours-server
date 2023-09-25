@@ -65,8 +65,8 @@ function createToken(user) {
   // returning a token with the payload info + secret words + user info
   return {
     _id: user._id,
-    name: user.fullName,
     email: user.email,
+    name: user.fullName,
     accessToken: jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: "90d",
     }),

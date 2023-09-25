@@ -47,6 +47,15 @@ userSchema.methods.createPassResetToken = function() {
   return resetToken;
 }
 
+// QUERY MIDDLEWARE: before or after a certain query is executed
+// the this keyword point to the current query, not the current document as inside the document middleware, because of the "find" hook it differenciate them
+// for find, findOne, findOneById et...
+userSchema.pre(/^find/, function (next) {
+  // userSchema.pre('find', function(next) {
+  this.find({ active: { $ne: false } });
+  next();
+});
+
 // userSchema.pre('save', function(next) {
 //   if(!this.isModified('hashPassed') || this.isNew) return next();
 //   this.hashedPass = Date.now();

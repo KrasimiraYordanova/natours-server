@@ -132,6 +132,7 @@ tourSchema.pre(/^find/, function (next) {
   this.start = Date.now();
   next();
 });
+
 tourSchema.post(/^find/, function (doc, next) {
   // catching the value from 'pre' query middleware
   // console.log(`Query took ${Date.now() - this.start} milliseconds!`);

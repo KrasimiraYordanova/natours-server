@@ -58,11 +58,11 @@ userController.put('/:id', catchAsync(async(req, res, next)=> {
 }));
 
 // delete my account
-userController.delete('/:id', catchAsync(async(req, res, next) => {
+userController.delete('/delete-account', hasUser(), catchAsync(async(req, res, next) => {
     // need to check if the user is admin or in case a user wants to delete his/her own account to check his/her id
     // alert window for confirmation
-    await deactivateAccount(req.params.id);
-    res.status(204).json({ status: 'success', data: null });
+    await deactivateAccount(req.user._id);
+    res.status(204).json({ status: 'success', message: "Your account was deactivated", data: null });
 }))
 
 

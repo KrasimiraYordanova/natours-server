@@ -27,7 +27,6 @@ authController.post(
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters long"),
   catchAsync(async (req, res, next) => {
-    console.log(req.body);
     const userObj = {
       name: req.body.name,
       email: req.body.email,
@@ -49,6 +48,16 @@ authController.post(
     }
     // on register - registering the user and returning the object with token and user info
     const token = await register(userObj);
+
+    // // secure: true - sent only on https, secured connection - only in production, during dev won't work
+    // // httpOnly: true - the cookie caanot be accessed or modified by the browser - xxs attacks
+    // // cookie() - cookie name, cookie token string, cookie options -> {}
+    // res.cookie("jwt", token.accessToken, {
+    //   expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+    //   secure: false,
+    //   httpOnly: true,
+    // });
+
     res.status(200).json(token);
   })
 );
@@ -60,6 +69,16 @@ authController.post(
       return next(new AppError("Please, provide email and password", 400));
     }
     const token = await login(req.body.email, req.body.password);
+
+    // secure: true - sent only on https, secured connection - only in production, during dev won't work
+    // httpOnly: true - the cookie caanot be accessed or modified by the browser - xxs attacks
+    // cookie() - cookie name, cookie token string, cookie options -> {}
+    res.cookie("jwt", token.accessToken, {
+      expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+      secure: false,
+      httpOnly: true,
+    });
+
     res.status(200).json(token);
   })
 );
@@ -132,6 +151,7 @@ authController.patch(
   })
 );
 
+// updating our own password
 authController.patch(
   "/update-password",
   hasUser(),
@@ -152,7 +172,5 @@ authController.patch(
     res.status(200).json(token);
   })
 );
-
-
 
 module.exports = authController;
