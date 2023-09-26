@@ -5,6 +5,7 @@ const tourController = require("../controllers/tourController");
 const globalError = require("../middlewares/globalError");
 const AppError = require("../util/appError");
 const userController = require("../controllers/userController");
+const reviewController = require("../controllers/reviewController");
 
 function routers(app) {
   
@@ -15,13 +16,14 @@ function routers(app) {
 
   app.use((req, res, next) => {
     req.requestTime = new Date().toISOString();
-    console.log(req.headers);
+    // console.log(req.headers);
     next();
   })
 
   app.use("/auth", authController);
   app.use("/users", userController);
   app.use("/tours", tourController);
+  app.use("/reviews", reviewController);
 
   app.all("*", (req, res, next) => {
     // res.status(404).json({status:"fail", message: `Can't find ${req.originalUrl} on this server`});

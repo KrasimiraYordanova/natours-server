@@ -7,7 +7,7 @@ function hasUser() {
     const user = await getUserId(req.user._id);
     req.user.role = user.role;
     if (!user) {
-      return next(new AppError("User for this token does not exist", 401));
+      return next(new AppError("User for this token does not exist. You need to log in", 401));
     }
     next();
   });

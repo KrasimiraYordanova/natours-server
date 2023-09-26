@@ -5,6 +5,7 @@ const {
 } = require("mongoose");
 const slugify = require("slugify");
 // const validator = require('validator');
+// const User = require('./User');
 
 const tourSchema = new Schema(
   {
@@ -97,6 +98,34 @@ const tourSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    startLocation: {
+      // GeoJSON
+      type: {
+        type: String,
+        default: "Point",
+        enum: ["Point"]
+      },
+      coordinates: [Number],
+      address: String,
+      description: String
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: "Point",
+          enum: ["Point"]
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number
+      }
+    ],
+    // guides: Array,
+    guides: [
+      {type: ObjectId, ref: "User"}
+    ]
   },
   // for the vertual properties
   {
@@ -110,6 +139,15 @@ tourSchema.virtual("durationWeeks").get(function () {
   return this.duration / 7;
 });
 
+// vertual populate
+tourSchema.virtual("reviews", {
+  ref: "Review", 
+  // the name of the field sotred into Review model
+  foreignField: 'tour',
+  // the nae if the field inside Tour model
+  localField: "_id"
+})
+
 // DOCUMENT MIDDLEWARE: runs before - the actual document is saved to the database - .save() and .create() (only on those two), not on update()
 tourSchema.pre("save", function (next) {
   this.slug = slugify(this.name, { lower: true });
@@ -120,6 +158,14 @@ tourSchema.post("save", function (savedDocument, next) {
   // console.log(savedDocument);
   next();
 });
+
+// // example of embedding documents if we want to use it
+// // if we want to embed documents into tour documents
+// tourSchema.pre('save', async function(next) {
+//   const guidesPromises = this.guides.map(async id => await User.findById(id)); // this return all promises
+//   this.guides = await Promise.all(guidesPromises); // returns array of users
+//   next();
+// })
 
 // QUERY MIDDLEWARE: before or after a certain query is executed
 // the this keyword point to the current query, not the current document as inside the document middleware, because of the "find" hook it diferenciate them
@@ -138,6 +184,15 @@ tourSchema.post(/^find/, function (doc, next) {
   // console.log(`Query took ${Date.now() - this.start} milliseconds!`);
 
   // console.log(doc);
+  next();
+});
+
+// populating model with referenced data
+tourSchema.pre(/^find/, function(next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -hashedPass'
+  });
   next();
 });
 

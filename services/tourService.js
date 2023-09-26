@@ -25,6 +25,13 @@ async function getToursByUserId(userId) {
 // tour by id
 async function getTourById(id) {
   return Tour.findById(id);
+
+  // // done as a query middleware so it works for all get tour, get tours etc...
+  // .populate({
+  //   path: 'guides',
+  //   select: '-__v -hashedPass'
+  // });
+
 }
 // create
 async function createTour(tour) {
