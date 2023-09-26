@@ -40,7 +40,8 @@ const reviewSchema = new Schema(
 
 // populating the current query
 reviewSchema.pre(/^find/, function (next) {
-  this.populate({ path: "tour", select: 'name' }).populate({ path: "user", select: 'fullName photo' });
+  this.populate({ path: "user", select: 'fullName photo' });
+//   this.populate({ path: "tour", select: 'name' }).populate({ path: "user", select: 'fullName photo' });
   next();
 });
 

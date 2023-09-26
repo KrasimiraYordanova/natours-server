@@ -24,7 +24,7 @@ async function getToursByUserId(userId) {
 }
 // tour by id
 async function getTourById(id) {
-  return Tour.findById(id);
+  return Tour.findById(id).populate('reviews');
 
   // // done as a query middleware so it works for all get tour, get tours etc...
   // .populate({

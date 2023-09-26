@@ -146,7 +146,7 @@ tourSchema.virtual("reviews", {
   foreignField: 'tour',
   // the nae if the field inside Tour model
   localField: "_id"
-})
+}) 
 
 // DOCUMENT MIDDLEWARE: runs before - the actual document is saved to the database - .save() and .create() (only on those two), not on update()
 tourSchema.pre("save", function (next) {
