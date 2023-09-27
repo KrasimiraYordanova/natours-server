@@ -12,9 +12,18 @@ const {
   aggregatingTourStats,
   getMonthlyPlan,
 } = require("../services/tourService");
+const { createReview } = require("../services/reviewService");
+const reviewController = require("./reviewController");
+const { deleteOne } = require("../util/handlerFactoryFunction");
 
-tourController.get("/", hasUser(), catchAsync(async (req, res, next) => {
-  let tours = [];
+tourController.use("/:tourId/reviews", reviewController);
+tourController.use("/:tourId/reviews", reviewController);
+
+tourController.get(
+  "/",
+  hasUser(),
+  catchAsync(async (req, res, next) => {
+    let tours = [];
     // if (req.query.where) {
     //   const userId = JSON.parse(req.query.where.split("=")[1]);
     //   tours = await getToursByUserId(userId);
@@ -72,7 +81,8 @@ tourController.get("/", hasUser(), catchAsync(async (req, res, next) => {
     res
       .status(200)
       .json({ status: "success", results: tours.length, tours: tours });
-}));
+  })
+);
 
 tourController.get("/tour-stats", async (req, res, next) => {
   const stats = await aggregatingTourStats();
@@ -123,17 +133,54 @@ tourController.put(
   })
 );
 
-tourController.delete("/:id", hasUser(), isRestricted('admin'), catchAsync(async (req, res) => {
-  // const tour = await getTourById(req.params.id);
-  // if (req.user._id == tour._ownerId) {
-  //   res.status(403).json({ message: "You cannot modify this record" });
-  // }
+tourController.delete(
+  "/:id",
+  hasUser(),
+  isRestricted("user"),
+  catchAsync(async (req, res, next) => {
+    // const tour = await getTourById(req.params.id);
+    // if (req.user._id == tour._ownerId) {
+    //   res.status(403).json({ message: "You cannot modify this record" });
+    // }
 
     const tour = await deleteTour(req.params.id);
     if (!tour) {
       return next(new AppError("The tour with the id does not exist", 404));
     }
-    res.status(204).end();
-}));
+    res.status(204).json({
+      status: "success",
+      data: null,
+      message: "Your document has been deleted"
+    });
+  })
+);
+
+// tourController.delete('/:id', hasUser(), isRestricted('user'), deleteOne(deleteTour(id)))
+
+// // create a router for the selected tour
+// tourController.post(
+//   "/:tourId/reviews",
+//   hasUser(),
+//   isRestricted("user"),
+//   catchAsync(async (req, res, next) => {
+//     console.log(req.body);
+//     console.log(req.params.tourId);
+//     console.log(req.user._id);
+
+//     const newReview = {
+//       review: req.body.review,
+//       rating: req.body.rating,
+//       user: req.user._id,
+//       tour: req.params.tourId,
+//     };
+
+//     console.log(newReview);
+//     const review = await createReview(newReview);
+//     res.status(201).json({
+//       status: "success",
+//       review,
+//     });
+//   })
+// );
 
 module.exports = tourController;
