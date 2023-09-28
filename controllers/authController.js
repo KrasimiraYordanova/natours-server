@@ -11,17 +11,16 @@ const {
   getUserTokenandUpdatePass,
   saveUserTokenOnEmailProvide,
   updatePassword,
-  updateData,
 } = require("../services/authService");
 const { getUserEmail, getUserId } = require("../services/userService");
 
 const { catchAsync } = require("../middlewares/catchAsync");
-const { hasUser } = require("../middlewares/guards");
+const { hasUser, isGuest } = require("../middlewares/guards");
 const AppError = require("../util/appError");
 const sendEmail = require("../util/email");
 
 authController.post(
-  "/register",
+  "/register", isGuest(),
   body("email").isEmail().withMessage("Invalid email"),
   body("password")
     .isLength({ min: 8 })
@@ -153,7 +152,7 @@ authController.patch(
 
 // updating our own password
 authController.patch(
-  "/update-password",
+  "/update-password", hasUser(),
   hasUser(),
   catchAsync(async (req, res, next) => {
     // 1. get user from the collection

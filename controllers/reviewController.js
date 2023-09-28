@@ -1,18 +1,23 @@
 const { catchAsync } = require("../middlewares/catchAsync");
 const { hasUser, isRestricted } = require("../middlewares/guards");
-const { getAllReviews, createReview, deleteReview } = require("../services/reviewService");
+const {
+  getAllReviews,
+  createReview,
+  updateReview,
+  deleteReview,
+  getReview,
+} = require("../services/reviewService");
 const AppError = require("../util/appError");
 const { deleteOne } = require("../util/handlerFactoryFunction");
 
 const reviewController = require("express").Router({ mergeParams: true });
-
 
 // get all reviews
 reviewController.get(
   "/",
   catchAsync(async (req, res, next) => {
     let filterObject = {};
-    if(req.params.tourId) filterObject = {tour: req.params.tourId};
+    if (req.params.tourId) filterObject = { tour: req.params.tourId };
 
     const reviews = await getAllReviews(filterObject);
     res
@@ -21,19 +26,52 @@ reviewController.get(
   })
 );
 
+reviewController.get(
+  "/:id",
+  catchAsync(async (req, res, next) => {
+    let rev = await getReview(req.params.id);
+    if (!rev) {
+      return next(new AppError("No document found with that id", 404));
+    }
+    res.status(200).json({ message: "success", rev });
+  })
+);
+
 // create a review
 reviewController.post(
-  "/", hasUser(), isRestricted('user'),
+  "/",
+  hasUser(),
+  isRestricted("user"),
   catchAsync(async (req, res, next) => {
-    console.log(req.body);
     const newReview = {
       review: req.body.review,
       rating: req.body.rating,
       user: req.user._id,
       tour: req.params.tourId,
     };
-    console.log(newReview);
     const review = await createReview(newReview);
+    res.status(201).json({
+      status: "success",
+      review,
+    });
+  })
+);
+
+// update a review
+reviewController.patch(
+  "/:id",
+  hasUser(),
+  isRestricted("user"),
+  catchAsync(async (req, res, next) => {
+    const rev = await getReview(req.params.id);
+    if (req.user._id != rev.user._id) {
+      return next(new AppError("You cannot modify this record", 403));
+    }
+    const updatedReview = {
+      review: req.body.review,
+      rating: req.body.rating
+    };
+    const review = await updateReview(req.params.id, updatedReview);
     res.status(201).json({
       status: "success",
       review,
@@ -53,7 +91,7 @@ reviewController.delete(
     res.status(204).json({
       status: "success",
       data: null,
-      message: "Your document has been deleted"
+      message: "Your document has been deleted",
     });
   })
 );

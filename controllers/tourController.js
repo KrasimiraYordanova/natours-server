@@ -12,8 +12,9 @@ const {
   aggregatingTourStats,
   getMonthlyPlan,
 } = require("../services/tourService");
-const { createReview } = require("../services/reviewService");
 const reviewController = require("./reviewController");
+
+const { createReview } = require("../services/reviewService");
 const { deleteOne } = require("../util/handlerFactoryFunction");
 
 tourController.use("/:tourId/reviews", reviewController);
@@ -21,7 +22,6 @@ tourController.use("/:tourId/reviews", reviewController);
 
 tourController.get(
   "/",
-  hasUser(),
   catchAsync(async (req, res, next) => {
     let tours = [];
     // if (req.query.where) {
@@ -33,7 +33,7 @@ tourController.get(
     const queryObj = { ...req.query };
     const excludedFields = ["page", "sort", "limit", "fields"];
     excludedFields.forEach((el) => delete queryObj[el]);
-    console.log(req.query, queryObj);
+    // console.log(req.query, queryObj);
 
     // 1.B advanced filtering
     // - converting the object to a string to be able to use the replace method
@@ -97,13 +97,15 @@ tourController.get("/monthly-plan/:year", async (req, res, next) => {
 
 tourController.post(
   "/",
+  hasUser(),
   catchAsync(async (req, res, next) => {
-    let tour = Object.assign(
-      { _ownerId: "6501a303154f3cfe39f95bb5" },
-      req.body
-    );
+    let tour = Object.assign({ _ownerId: req.user._id }, req.body);
     tour = await createTour(tour);
-    res.statusCode(200).json(tour);
+    res.status(200).json({
+      status: "success",
+      message: "You created a new tour",
+      tour,
+    });
   })
 );
 
@@ -120,16 +122,18 @@ tourController.get(
 
 tourController.put(
   "/:id",
+  hasUser(),
+  isRestricted("user"),
   catchAsync(async (req, res, next) => {
-    // const tour = await getTourById(req.params.id);
-    // if (req.user._id != tour._ownerId) {
-    //   res.status(403).json({ message: "You cannot modify this record" });
-    // }
-    const tour = await updateTour(req.params.id, req.body);
-    if (!tour) {
+    const tour = await getTourById(req.params.id);
+    if (req.user._id != tour._ownerId) {
+      return next(new AppError("You cannot modify this record", 403));
+    }
+    const updatedTour = await updateTour(req.params.id, req.body);
+    if (!updatedTour) {
       return next(new AppError("No tour found with that id", 404));
     }
-    res.status(200).json(tour);
+    res.status(200).json(updatedTour);
   })
 );
 
@@ -150,12 +154,12 @@ tourController.delete(
     res.status(204).json({
       status: "success",
       data: null,
-      message: "Your document has been deleted"
+      message: "Your document has been deleted",
     });
   })
 );
 
-// tourController.delete('/:id', hasUser(), isRestricted('user'), deleteOne(deleteTour(id)))
+// tourController.delete('/:id', hasUser(), isRestricted('user'), deleteOne(deleteTour))
 
 // // create a router for the selected tour
 // tourController.post(

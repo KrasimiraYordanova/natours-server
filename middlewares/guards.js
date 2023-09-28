@@ -15,11 +15,20 @@ function hasUser() {
 
 function isRestricted(...role) {
   return catchAsync(async (req, res, next) => {
-    console.log(req.user);
     if (role != req.user.role) {
-      return next(new AppError('Permission forbidden', 403));
+      return next(new AppError("Permission forbidden", 403));
     }
     next();
+  });
+}
+
+function isGuest() {
+  return catchAsync(async (req, res, next) => {
+    if (req.user) {
+      return next(new AppError("You are already logged in", 400));
+    } else {
+      next();
+    }
   });
 }
 
@@ -46,18 +55,8 @@ exports.protectionGuardSession = catchAsync(async (req, res, next) => {
   next();
 });
 
-function isGuest() {
-  return (req, res, next) => {
-    if (req.user) {
-      res.status(400).json({ message: "You are already logged in" });
-    } else {
-      next();
-    }
-  };
-}
-
 module.exports = {
   hasUser,
   isGuest,
-  isRestricted
+  isRestricted,
 };

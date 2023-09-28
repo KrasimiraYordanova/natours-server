@@ -3,6 +3,7 @@ const Tour = require("../models/Tour");
 // all tours
 async function getTours(queryString, queries) {
   let tours = Tour.find(queryString);
+  // let tours = Tour.find(queryString).explain();
   if (queries) {
     for (let query of queries) {
       if (query.sort) {

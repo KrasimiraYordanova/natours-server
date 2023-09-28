@@ -24,6 +24,7 @@ const tourSchema = new Schema(
       // default: 4.5,
       min: [1, "Rating must be above 1"],
       max: [5, "Rating must be below 6"],
+      // set: val => Math.tound(val*10) / 10
     },
     ratingQuantity: {
       type: Number,
@@ -134,6 +135,9 @@ const tourSchema = new Schema(
   }
 );
 
+tourSchema.index({ price:1, ratingAverage: -1 });
+tourSchema.index({ slug: 1 });
+
 // defining vertual property
 tourSchema.virtual("durationWeeks").get(function () {
   return this.duration / 7;
@@ -144,7 +148,7 @@ tourSchema.virtual("reviews", {
   ref: "Review", 
   // the name of the field sotred into Review model
   foreignField: 'tour',
-  // the nae if the field inside Tour model
+  // the name of the field inside Tour model
   localField: "_id"
 }) 
 

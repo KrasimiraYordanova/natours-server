@@ -3,7 +3,7 @@ const AppError = require("./appError");
 
 function deleteOne(serviceFunction) {
   return catchAsync(async (req, res, next) => {
-    const document = await serviceFunction(id);
+    const document = await serviceFunction(req.params.id);
     if (!document) {
       return next(new AppError(`The document with the id does not exist`, 404));
     }
