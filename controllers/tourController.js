@@ -11,6 +11,7 @@ const {
   deleteTour,
   aggregatingTourStats,
   getMonthlyPlan,
+  calculateTousDistance,
 } = require("../services/tourService");
 const reviewController = require("./reviewController");
 
@@ -103,18 +104,36 @@ tourController.get(
   catchAsync(async (req, res, next) => {
     console.log(req.params);
     const { distance, latlng, unit } = req.params;
-    const [ lat, lng ] = latlng.split(',');
+    const [lat, lng] = latlng.split(",");
 
-    if(!lat || !lng) {
-      next(new AppError("Please, provide latitude and longitude (lat,long)", 400));
+    if (!lat || !lng) {
+      next(
+        new AppError("Please, provide latitude and longitude (lat,long)", 400)
+      );
     }
     // the search radius - convertion to radiants - deviding the max distance to the radius of the earth
-    const radius = unit == 'km' ? distance / 6378.1 : distance / 3963.2;
+    const radius = unit == "km" ? distance / 6378.1 : distance / 3963.2;
 
-    console.log(distance, latlng, unit);
+    // console.log(distance, latlng, unit);
     const tours = await getToursWithinKm(lat, lng, radius);
 
-    res.status(200).json({ status: "success", results: tours.length , tours });
+    res.status(200).json({ status: "success", results: tours.length, tours });
+  })
+);
+
+tourController.get(
+  "/tours-distance/:latlgn/unit/:unit",
+  catchAsync(async (req, res, next) => {
+    const { latlng, unit } = req.params;
+    const multiplier = unit == "km" ? 0.001 : 0.000621371 ;
+    const [lat, lng] = latlng.split(',');
+    if (!lat || !lng) {
+      next(
+        new AppError("Please, provide latitude and longitude (lat,long)", 400)
+      );
+    }
+    const toursDistance = await calculateTousDistance(lat, lng, multiplier)
+    res.status(200).json({ status: "success", toursDistance });
   })
 );
 

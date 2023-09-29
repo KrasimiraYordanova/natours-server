@@ -22,18 +22,36 @@ async function getTours(queryString, queries) {
 
 // get tours withing km
 async function getToursWithinKm(lat, lng, radius) {
-  return Tour.find({startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius]}}});
+  return Tour.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+  });
 }
 
-// calculating distance from my place to a place
-async function getToursWithinKm(lat, lng, radius) {
-  return Tour.find({startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius]}}});
+// calculating distance from my place to tours starting place
+async function calculateTousDistance(lat, lng, multiplier) {
+  return Tour.aggregate([
+    {
+      $geoNear: {
+        near: { type: "Point", coordinates: [Number(lng), Number(lat)] },
+        distanceField: "distance",
+        distanceMultiplier: multiplier
+      },
+    },
+    // name of fields we want to keep
+    { $project: {
+      distance: 1,
+      name: 1
+    }}
+  ]);
 }
 
-// tours by user Id
+// TO DO
+// tours by user Id - for quering tours belonging to the user
+// tours by user Id - for quering bookings of a user
 async function getToursByUserId(userId) {
   return Tour.find({ _ownerId: userId });
 }
+
 // tour by id
 async function getTourById(id) {
   return Tour.findById(id).populate("reviews");
@@ -138,6 +156,7 @@ async function getMonthlyPlan(year) {
 module.exports = {
   getTours,
   getToursWithinKm,
+  calculateTousDistance,
   getToursByUserId,
   getTourById,
   createTour,
