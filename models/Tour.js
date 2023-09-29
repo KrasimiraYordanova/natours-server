@@ -137,6 +137,9 @@ const tourSchema = new Schema(
 
 tourSchema.index({ price:1, ratingAverage: -1 });
 tourSchema.index({ slug: 1 });
+// in order to be able to do geo spacial queries we need to first attribute an index to the field the geo spacial data we are searching for is stored
+// 2dsphere if the points correspond to real earth data or just 2d for fictional points on a two dimentional plain
+tourSchema.index({ startLocation: '2dsphere'});
 
 // defining vertual property
 tourSchema.virtual("durationWeeks").get(function () {

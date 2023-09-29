@@ -19,20 +19,30 @@ async function getTours(queryString, queries) {
   }
   return tours;
 }
+
+// get tours withing km
+async function getToursWithinKm(lat, lng, radius) {
+  return Tour.find({startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius]}}});
+}
+
+// calculating distance from my place to a place
+async function getToursWithinKm(lat, lng, radius) {
+  return Tour.find({startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius]}}});
+}
+
 // tours by user Id
 async function getToursByUserId(userId) {
   return Tour.find({ _ownerId: userId });
 }
 // tour by id
 async function getTourById(id) {
-  return Tour.findById(id).populate('reviews');
+  return Tour.findById(id).populate("reviews");
 
   // // done as a query middleware so it works for all get tour, get tours etc...
   // .populate({
   //   path: 'guides',
   //   select: '-__v -hashedPass'
   // });
-
 }
 // create
 async function createTour(tour) {
@@ -101,23 +111,23 @@ async function getMonthlyPlan(year) {
     {
       // grouping by month - extracting the month with $month operator from the date field
       $group: {
-        _id: { $month: '$startDates' },
+        _id: { $month: "$startDates" },
         // number of tours in a given month
         numToursOfGivenMonth: { $sum: 1 },
-        // which tours are in this month, need to be an array thats the way to specify few tours 
-        toursOfMonth: { $push: '$name'}
+        // which tours are in this month, need to be an array thats the way to specify few tours
+        toursOfMonth: { $push: "$name" },
       },
     },
     // adding a new field
     {
-      $addFields: { month: '$_id'}
+      $addFields: { month: "$_id" },
     },
     // removing the _id field, adding _id: 1
     {
-      $project: { _id: 0 }
+      $project: { _id: 0 },
     },
     {
-      $sort: { numToursOfGivenMonth: -1}
+      $sort: { numToursOfGivenMonth: -1 },
     },
     // {
     //   $limit: 6
@@ -127,6 +137,7 @@ async function getMonthlyPlan(year) {
 
 module.exports = {
   getTours,
+  getToursWithinKm,
   getToursByUserId,
   getTourById,
   createTour,

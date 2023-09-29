@@ -95,6 +95,29 @@ tourController.get("/monthly-plan/:year", async (req, res, next) => {
   res.status(200).json({ status: "success", plan });
 });
 
+// if using query string and ask the user to provide those:
+// '/tours-withinKm?distance=233&center=-40,45&unit=km'
+// '/tours-withinKm?233/center/40,45/unit/km' - the rout, anothr way of specifying routs
+tourController.get(
+  "/tour-withinKm/:distance/center/:latlng/unit/:unit",
+  catchAsync(async (req, res, next) => {
+    console.log(req.params);
+    const { distance, latlng, unit } = req.params;
+    const [ lat, lng ] = latlng.split(',');
+
+    if(!lat || !lng) {
+      next(new AppError("Please, provide latitude and longitude (lat,long)", 400));
+    }
+    // the search radius - convertion to radiants - deviding the max distance to the radius of the earth
+    const radius = unit == 'km' ? distance / 6378.1 : distance / 3963.2;
+
+    console.log(distance, latlng, unit);
+    const tours = await getToursWithinKm(lat, lng, radius);
+
+    res.status(200).json({ status: "success", results: tours.length , tours });
+  })
+);
+
 tourController.post(
   "/",
   hasUser(),
