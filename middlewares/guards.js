@@ -5,17 +5,18 @@ const { catchAsync } = require("./catchAsync");
 function hasUser() {
   return catchAsync(async (req, res, next) => {
     const user = await getUserId(req.user._id);
-    req.user.role = user.role;
     if (!user) {
       return next(new AppError("User for this token does not exist. You need to log in", 401));
     }
+    req.user.role = user.role;
+    req.user.name = user.fullName;
     next();
   });
 }
 
-function isRestricted(...role) {
+function isRestricted(...roles) {
   return catchAsync(async (req, res, next) => {
-    if (role != req.user.role) {
+    if (!roles.includes(req.user.role)) {
       return next(new AppError("Permission forbidden", 403));
     }
     next();

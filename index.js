@@ -16,8 +16,6 @@ async function start() {
   dotenv.config({ path: "./config.env" });
 
   const app = express();
-  // console.log(app.get('env'));
-  // console.log(process.env);
 
   templateConfig(app);
   await dbConnection();

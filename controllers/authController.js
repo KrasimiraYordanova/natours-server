@@ -30,19 +30,20 @@ authController.post(
       name: req.body.name,
       email: req.body.email,
       password: req.body.password,
-      role: req.body.role,
+      // role: req.body.role,
     };
     console.log(userObj);
+    console.log(req.body);
     // catching the errros from express-validator
     const { errors } = validationResult(req);
     const errorsString = errors.map((obj) => obj.msg).join(", ");
     if (errors.length > 0) {
       return next(new AppError(errorsString, 400));
     }
-    if (!req.body.name || !req.body.repassword || !req.body.repassword) {
+    if (!req.body.name || !req.body.email || !req.body.password || !req.body.rePassword) {
       return next(new AppError("All fields are required", 400));
     }
-    if (req.body.password != req.body.repassword) {
+    if (req.body.password != req.body.rePassword) {
       return next(new AppError("Passwords don't match", 400));
     }
     // on register - registering the user and returning the object with token and user info
@@ -51,11 +52,12 @@ authController.post(
     // // secure: true - sent only on https, secured connection - only in production, during dev won't work
     // // httpOnly: true - the cookie caanot be accessed or modified by the browser - xxs attacks
     // // cookie() - cookie name, cookie token string, cookie options -> {}
-    // res.cookie("jwt", token.accessToken, {
-    //   expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-    //   secure: false,
-    //   httpOnly: true,
-    // });
+
+    res.cookie("jwt", token.accessToken, {
+      expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+      secure: false,
+      httpOnly: true,
+    });
 
     res.status(200).json(token);
   })
@@ -67,17 +69,14 @@ authController.post(
     if (!req.body.email || !req.body.password) {
       return next(new AppError("Please, provide email and password", 400));
     }
-    const token = await login(req.body.email, req.body.password);
+    const { email, password } = req.body;
+    const token = await login( email, password );
 
-    // secure: true - sent only on https, secured connection - only in production, during dev won't work
-    // httpOnly: true - the cookie caanot be accessed or modified by the browser - xxs attacks
-    // cookie() - cookie name, cookie token string, cookie options -> {}
     res.cookie("jwt", token.accessToken, {
       expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
       secure: false,
       httpOnly: true,
     });
-
     res.status(200).json(token);
   })
 );

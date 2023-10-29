@@ -13,19 +13,27 @@ const helmet = require('helmet');
 // npm i hpp
 const hpp = require("hpp");
 
+const cors = require('cors');
+
 
 function templateConfig(app) {
 
     // security http headers
     app.use(helmet());
     // CORS
-    app.use((req, res, next) => {
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'HEAD, OPTIONS, GET, POST, PUT, PATCH, DELETE');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    // app.use((req, res, next) => {
+    //     res.setHeader('Access-Control-Allow-Origin', '*');
+    //     res.setHeader('Access-Control-Allow-Methods', 'HEAD, OPTIONS, GET, POST, PUT, PATCH, DELETE');
+    //     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         
-        next();
-    })
+    //     next();
+    // })
+
+    app.use(cors({
+        origin: 'http://localhost:4200',
+        credentials: true
+      }));
+
     // limit request from same IP
     app.use(limiter);
     // data sanitization against NoSQL query injection

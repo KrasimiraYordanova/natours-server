@@ -94,11 +94,16 @@ const tourSchema = new Schema(
       type: Date,
       default: Date.now,
     },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
     startDates: [Date],
     secretTour: {
       type: Boolean,
       default: false,
     },
+
     startLocation: {
       // GeoJSON
       type: {
@@ -123,6 +128,7 @@ const tourSchema = new Schema(
         day: Number
       }
     ],
+    
     // guides: Array,
     guides: [
       {type: ObjectId, ref: "User"}

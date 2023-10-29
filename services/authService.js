@@ -22,7 +22,6 @@ async function register(userObj) {
   const user = await User.create({
     fullName: userObj.name,
     email: userObj.email,
-    role: userObj.role,
     hashedPass: hashingPass,
   });
   // - creating user token from the saved data
@@ -42,11 +41,14 @@ async function login(email, password) {
   }
   // comparing the user entered password with the hashedPass inside the database to see if they match
   const hashMached = await bcrypt.compare(password, user.hashedPass);
+
+  // with the instance method
+  // const correctPassword = await user.correctPassword(password, user.hashedPass)
+
   // if password does not match with the hashedPass - throwing error
   if (hashMached == false) {
-    // if (!user || (await bcrypt.compare(password, user.hashedPass))) {
-    return new AppError("Email or password are incorrect", 401);
-    // return new AppError("Email or password are incorrect", 400);
+    throw new Error("Email or password are incorrect");
+    // return new AppError("Email or password are incorrect", 401);
   }
   // if match - return token
   return createToken(user);
@@ -60,16 +62,14 @@ function createToken(user) {
   // inside the payload we enter the id and email of the user
   const payload = {
     _id: user._id,
-    email: user.email,
+    email: user.email
   };
   // returning a token with the payload info + secret words + user info
   return {
     _id: user._id,
     email: user.email,
     name: user.fullName,
-    accessToken: jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: "90d",
-    }),
+    accessToken: jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "90d" }),
   };
 }
 

@@ -29,14 +29,14 @@ function handleExpressValidatorErrorDB(err) {
   return new AppError(message, 400);
 }
 
-// handle jwt error 
+// handle jwt error - works only in prod mode
 function handleJsonWebTokenError() {
   return new AppError("Invalid token. Please log in again!", 401);
 }
 
 // handle JsonWToken Expired Error;
 function handleJsonExpiredError() {
-  return new AppError("Expired token. Please log in!", 401);
+  return new AppError("Expired token. Please log in again!", 401);
 }
 
 // Errors to be displayed when in dev mode - function
@@ -88,7 +88,7 @@ module.exports = (err, req, res, next) => {
     } else if (Array.isArray(err)) {
       error = handleExpressValidatorErrorDB(err);
     } else if (error.name === "JsonWebTokenError") {
-      error = handleJsonWebTokenError(error);
+      error = handleJsonWebTokenError();
     } else if(error.name === "TokenExpiredError") {
       error = handleJsonExpiredError();
     } else {

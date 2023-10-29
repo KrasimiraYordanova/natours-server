@@ -34,7 +34,7 @@ tourController.get(
     const queryObj = { ...req.query };
     const excludedFields = ["page", "sort", "limit", "fields"];
     excludedFields.forEach((el) => delete queryObj[el]);
-    // console.log(req.query, queryObj);
+    console.log(req.query, queryObj);
 
     // 1.B advanced filtering
     // - converting the object to a string to be able to use the replace method
@@ -74,6 +74,7 @@ tourController.get(
         let skip = (page - 1) * limit;
         queries.push({ skip }, { limit });
       }
+      console.log(queryString);
       console.log(queries);
       tours = getTours(JSON.parse(queryString), queries);
     }
@@ -81,7 +82,7 @@ tourController.get(
     tours = await tours;
     res
       .status(200)
-      .json({ status: "success", results: tours.length, tours: tours });
+      .json(tours);
   })
 );
 

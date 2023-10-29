@@ -1,5 +1,5 @@
 const { Schema, model } = require("mongoose");
-const crypto = require("crypto");
+const { bcrypt } = require('bcrypt');
 
 const userSchema = new Schema({
   fullName: {
@@ -21,7 +21,7 @@ const userSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["admin", "user"],
+    enum: ["admin", "user", "guide"],
     default: "user",
   },
   passwordResetToken: String,
@@ -30,6 +30,13 @@ const userSchema = new Schema({
     type: Boolean,
     default: true,
     select: false
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date
   }
 });
 
@@ -55,6 +62,13 @@ userSchema.pre(/^find/, function (next) {
   this.find({ active: { $ne: false } });
   next();
 });
+
+// instance method - a method available on all documents of a certain collection
+// userSchema.methods.correctPassword = async function(insertedPass, existingPass) {
+//   return bcrypt.compare(insertedPass, existingPass);
+// }
+
+
 
 // userSchema.pre('save', function(next) {
 //   if(!this.isModified('hashPassed') || this.isNew) return next();
