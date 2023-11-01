@@ -7,9 +7,10 @@ module.exports = () =>
     let token;
     if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies.jwt) {
+      token = req.cookies.jwt;
     }
     console.log('cookie');
-    console.log(req.cookies);
     console.log(req.cookies.jwt);
     // if there is a token need to verify it
     if (token) {
