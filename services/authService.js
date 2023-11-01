@@ -68,7 +68,7 @@ function createToken(user) {
   return {
     _id: user._id,
     email: user.email,
-    name: user.fullName,
+    fullName: user.fullName,
     accessToken: jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "90d" }),
   };
 }

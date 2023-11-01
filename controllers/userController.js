@@ -27,7 +27,7 @@ userController.get(
   catchAsync(async (req, res, next) => {
     const user = await getUserId(req.user._id);
     user.hashedPass = undefined;
-    res.status(200).json({ status: "success", user });
+    res.status(200).json(user);
   })
 );
 

@@ -29,11 +29,8 @@ authController.post(
     const userObj = {
       name: req.body.name,
       email: req.body.email,
-      password: req.body.password,
-      // role: req.body.role,
+      password: req.body.password
     };
-    console.log(userObj);
-    console.log(req.body);
     // catching the errros from express-validator
     const { errors } = validationResult(req);
     const errorsString = errors.map((obj) => obj.msg).join(", ");
@@ -55,7 +52,8 @@ authController.post(
 
     res.cookie("jwt", token.accessToken, {
       expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-      secure: false,
+      // sameSite: 'strict',
+      // secure: false,
       httpOnly: true,
     });
 
@@ -64,7 +62,7 @@ authController.post(
 );
 
 authController.post(
-  "/login",
+  "/login", isGuest(),
   catchAsync(async (req, res, next) => {
     if (!req.body.email || !req.body.password) {
       return next(new AppError("Please, provide email and password", 400));
@@ -74,17 +72,19 @@ authController.post(
 
     res.cookie("jwt", token.accessToken, {
       expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-      secure: false,
+      // sameSite: 'strict',
+      // secure: false,
       httpOnly: true,
     });
     res.status(200).json(token);
   })
 );
 
-authController.get("/logout", async (req, res) => {
+authController.post("/logout", async (req, res) => {
   const token = req.token;
   // console.log(token);
-  await logout(token);
+  res.clearCookie('jwt');
+  // await logout(token);
   res.status(204).end();
 });
 
