@@ -9,17 +9,22 @@ function hasUser() {
       return next(new AppError("User for this token does not exist. You need to log in", 401));
     }
     req.user.role = user.role;
-    req.user.name = user.fullName;
     next();
   });
 }
 
 function isRestricted(...roles) {
   return catchAsync(async (req, res, next) => {
+    let authorizationToken;
+    if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      authorizationToken = req.headers.authorization.split(' ')[1];
+    } 
+    if (authorizationToken && authorizationToken == req.token) {
+      next();
+    }
     if (!roles.includes(req.user.role)) {
       return next(new AppError("Permission forbidden", 403));
     }
-    next();
   });
 }
 

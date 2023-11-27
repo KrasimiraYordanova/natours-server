@@ -23,7 +23,7 @@ userController.get(
 // get me
 userController.get(
   "/me",
-  hasUser(),
+  hasUser(), isRestricted('user'),
   catchAsync(async (req, res, next) => {
     const user = await getUserId(req.user._id);
     user.hashedPass = undefined;

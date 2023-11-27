@@ -23,12 +23,16 @@ function templateConfig(app) {
 
     // security http headers
     app.use(helmet());
+    
+    // body parser, reading data from the body into req.body
+    app.use(express.json({ limit: "10kb"}));
+    app.use(cookieParser());
     // CORS
     // app.use((req, res, next) => {
     //     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
     //     res.setHeader('Access-Control-Allow-Methods', 'HEAD, OPTIONS, GET, POST, PUT, PATCH, DELETE');
     //     res.setHeader('Access-Control-Allow-Credentials', true);
-    //     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    //     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
         
     //     next();
     // })
@@ -37,10 +41,6 @@ function templateConfig(app) {
         origin: 'http://localhost:4200',
         credentials: true
       }));
-
-    // body parser, reading data from the body into req.body
-    app.use(express.json({ limit: "10kb"}));
-    app.use(cookieParser());
 
     app.use((req, res, next) => {
       console.log(req.cookies);
