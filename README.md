@@ -13,7 +13,7 @@
  - bcrypt
  - jwt
 
-###### Nature Trips Api's
+##### Nature Trips Api's
  - You can check the website endpoints on Postman, where I have been testing the functionalities (there are still bits to be added and reviewed)
  - https://documenter.getpostman.com/view/16571117/2s9YeEbsF5
 
