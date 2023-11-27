@@ -1,7 +1,6 @@
 # Nature Trips
 
-This website is for foreigners and tourists visiting new places and countries.
-Local people can create their own trip so tourist can visit interesting places in the area with the locals and get acquainted with traditions in the area.
+### This website is for foreigners and tourists visiting new places and countries. Local people can create their own trip so tourist can visit interesting places in the area with the locals and get acquainted with traditions in the area.
 
 
 Nature Trips Api's
