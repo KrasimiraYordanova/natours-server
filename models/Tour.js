@@ -60,6 +60,10 @@ const tourSchema = new Schema(
         message: "Difficulty is either: easy, medium, difficult",
       },
     },
+    // season: {
+    //   type: String,
+    //   required: [true, "You need to speciafy the season"]
+    // },
     price: {
       type: Number,
       required: [true, "A tour must have a price"],
@@ -104,6 +108,49 @@ const tourSchema = new Schema(
       default: false,
     },
 
+    // startLocation: {
+    //   // GeoJSON
+    //   type: {
+    //     type: String,
+    //     default: "Feature"
+    //   },
+    //   geometry: {
+    //     type: {
+    //       type: String,
+    //       default: "Point",
+    //       enum: ["Point"]
+    //     },
+    //     coordinates: [Number],
+    //   },
+    //   properties: {
+    //     name: String,
+    //     address: String,
+    //     description: String
+    //   }
+    // },
+    
+    // locations: [
+    //   {
+    //     type: {
+    //       type: String,
+    //       default: "Feature"
+    //     },
+    //     geometry: {
+    //       type: {
+    //         type: String,
+    //         default: "Point",
+    //         enum: ["Point"]
+    //       },
+    //       coordinates: [Number],
+    //     },
+    //     properties: {
+    //       name: String,
+    //       address: String,
+    //       description: String
+    //     }
+    //   }
+    // ],
+
     startLocation: {
       // GeoJSON
       type: {
@@ -115,6 +162,7 @@ const tourSchema = new Schema(
       address: String,
       description: String
     },
+
     locations: [
       {
         type: {
@@ -155,7 +203,7 @@ tourSchema.virtual("durationWeeks").get(function () {
 // vertual populate
 tourSchema.virtual("reviews", {
   ref: "Review", 
-  // the name of the field sotred into Review model
+  // the name of the field stored into Review model
   foreignField: 'tour',
   // the name of the field inside Tour model
   localField: "_id"

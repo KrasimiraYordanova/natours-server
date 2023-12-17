@@ -52,8 +52,6 @@ authController.post(
 
     res.cookie("jwt", token.accessToken, {
       expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-      // sameSite: 'strict',
-      secure: false,
       httpOnly: true,
     });
 
@@ -72,8 +70,6 @@ authController.post(
 
     res.cookie("jwt", token.accessToken, {
       expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-      // sameSite: 'strict',
-      secure: false,
       httpOnly: true,
     });
     res.status(200).json(token);

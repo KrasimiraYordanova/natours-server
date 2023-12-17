@@ -21,7 +21,7 @@ async function start() {
   await dbConnection();
   routers(app);
 
-  const port = process.env.PORT || 3030;
+  const port = process.env.PORT || 3000;
   const serverOn = app.listen(port, () =>
     console.log(`Server is listening on port ${port}`)
   );

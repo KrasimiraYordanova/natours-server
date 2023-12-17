@@ -142,6 +142,7 @@ tourController.post(
   "/",
   hasUser(),
   catchAsync(async (req, res, next) => {
+    console.log(req.body);
     let tour = Object.assign({ _ownerId: req.user._id }, req.body);
     tour = await createTour(tour);
     res.status(200).json({
@@ -159,7 +160,7 @@ tourController.get(
     if (!tour) {
       return next(new AppError("No tour found with that id", 404));
     }
-    res.status(200).json({ message: "success", tour });
+    res.status(200).json( tour );
   })
 );
 

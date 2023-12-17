@@ -4,10 +4,7 @@ const { catchAsync } = require("./catchAsync");
 module.exports = () =>
   catchAsync(async (req, res, next) => {
     // extracting the token out of the headers
-    let token;
-    if (req.cookies.jwt) {
-      token = req.cookies.jwt;
-    }
+    const token = req.cookies.jwt || '';
     console.log('cookie');
     console.log(req.cookies.jwt);
     // if there is a token need to verify it
@@ -16,7 +13,7 @@ module.exports = () =>
       const payload = verifyToken(token);
       req.user = payload;
       req.token = token;
+      console.log(token);
     }
-    console.log(token);
     next();
   });
