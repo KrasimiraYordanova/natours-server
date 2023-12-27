@@ -18,7 +18,7 @@ const hpp = require("hpp");
 
 const cors = require('cors');
 
-// const path = require('path');
+const path = require('path');
 
 
 function templateConfig(app) {
@@ -27,7 +27,7 @@ function templateConfig(app) {
     app.use(helmet());
     
     // static files
-    app.use(express.static('static'));
+    app.use(express.static(path.resolve(__dirname, 'static')));
 
     // CORS
     app.use((req, res, next) => {

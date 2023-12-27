@@ -6,7 +6,7 @@ const { hasUser, isRestricted } = require("../middlewares/guards");
 const {
   getTours,
   createTour,
-  getTourById,
+  getTourBySlug,
   updateTour,
   deleteTour,
   aggregatingTourStats,
@@ -18,8 +18,8 @@ const reviewController = require("./reviewController");
 const { createReview } = require("../services/reviewService");
 const { deleteOne } = require("../util/handlerFactoryFunction");
 
-tourController.use("/:tourId/reviews", reviewController);
-tourController.use("/:tourId/reviews", reviewController);
+tourController.use("/:slug/reviews", reviewController);
+// tourController.use("/:tourId/reviews", reviewController);
 
 tourController.get(
   "/",
@@ -154,26 +154,27 @@ tourController.post(
 );
 
 tourController.get(
-  "/:id",
+  "/:slug",
   catchAsync(async (req, res, next) => {
-    let tour = await getTourById(req.params.id);
+    // console.log(req.params);
+    let tour = await getTourBySlug(req.params.slug);
     if (!tour) {
-      return next(new AppError("No tour found with that id", 404));
+      return next(new AppError("No tour found with that name", 404));
     }
     res.status(200).json( tour );
   })
 );
 
 tourController.put(
-  "/:id",
+  "/:slug",
   hasUser(),
   isRestricted("user"),
   catchAsync(async (req, res, next) => {
-    const tour = await getTourById(req.params.id);
+    const tour = await getTourBySlug(req.params.slug);
     if (req.user._id != tour._ownerId) {
       return next(new AppError("You cannot modify this record", 403));
     }
-    const updatedTour = await updateTour(req.params.id, req.body);
+    const updatedTour = await updateTour(req.params.slug, req.body);
     if (!updatedTour) {
       return next(new AppError("No tour found with that id", 404));
     }

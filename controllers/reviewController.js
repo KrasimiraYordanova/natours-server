@@ -7,6 +7,7 @@ const {
   deleteReview,
   getReview,
 } = require("../services/reviewService");
+const { getTourBySlug } = require("../services/tourService");
 const AppError = require("../util/appError");
 const { deleteOne } = require("../util/handlerFactoryFunction");
 
@@ -16,9 +17,9 @@ const reviewController = require("express").Router({ mergeParams: true });
 reviewController.get(
   "/",
   catchAsync(async (req, res, next) => {
+    let tour = await getTourBySlug(req.params.slug);
     let filterObject = {};
-    if (req.params.tourId) filterObject = { tour: req.params.tourId };
-
+    if (req.params.slug && tour) filterObject = { tour: tour._id };
     const reviews = await getAllReviews(filterObject);
     res
       .status(200)

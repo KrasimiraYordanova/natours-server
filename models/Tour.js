@@ -35,7 +35,7 @@ const tourSchema = new Schema(
       trim: true,
       maxlength: [
         300,
-        "A tour description must have less or equal then 40 characters",
+        "A tour description must have less then or equal to 40 characters",
       ],
       minlength: [
         10,
@@ -107,49 +107,8 @@ const tourSchema = new Schema(
       type: Boolean,
       default: false,
     },
-
-    // startLocation: {
-    //   // GeoJSON
-    //   type: {
-    //     type: String,
-    //     default: "Feature"
-    //   },
-    //   geometry: {
-    //     type: {
-    //       type: String,
-    //       default: "Point",
-    //       enum: ["Point"]
-    //     },
-    //     coordinates: [Number],
-    //   },
-    //   properties: {
-    //     name: String,
-    //     address: String,
-    //     description: String
-    //   }
-    // },
     
-    // locations: [
-    //   {
-    //     type: {
-    //       type: String,
-    //       default: "Feature"
-    //     },
-    //     geometry: {
-    //       type: {
-    //         type: String,
-    //         default: "Point",
-    //         enum: ["Point"]
-    //       },
-    //       coordinates: [Number],
-    //     },
-    //     properties: {
-    //       name: String,
-    //       address: String,
-    //       description: String
-    //     }
-    //   }
-    // ],
+    
 
     startLocation: {
       // GeoJSON
@@ -179,7 +138,11 @@ const tourSchema = new Schema(
     
     // guides: Array,
     guides: [
-      {type: ObjectId, ref: "User"}
+      // {type: ObjectId, ref: "User"}
+      {
+        name: {type:String},
+        role: {type: String}
+      }
     ]
   },
   // for the vertual properties

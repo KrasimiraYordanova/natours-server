@@ -53,8 +53,8 @@ async function getToursByUserId(userId) {
 }
 
 // tour by id
-async function getTourById(id) {
-  return Tour.findById(id).populate("reviews");
+async function getTourBySlug(slug) {
+  return Tour.findOne({ slug: slug}).populate({ path: "reviews", fields: "review rating user"});
 
   // // done as a query middleware so it works for all get tour, get tours etc...
   // .populate({
@@ -67,10 +67,10 @@ async function createTour(tour) {
   return Tour.create(tour);
 }
 // edit
-async function updateTour(id, updatedTour) {
+async function updateTour(slug, updatedTour) {
   // so mongoose validators can valid the new changes, othewise they will accept the changes even if they are wrong - findByIdAndUpdate method
   // const tour = Tour.findByIdAndUpdate(id, updatedTour, { new: true, runValidators: true });
-  const tour = await Tour.findById(id);
+  const tour = await Tour.findOne({ slug: slug});
   tour.name = updatedTour.name;
   tour.description = updatedTour.description;
   tour.duration = updatedTour.duration;
@@ -158,7 +158,7 @@ module.exports = {
   getToursWithinKm,
   calculateTousDistance,
   getToursByUserId,
-  getTourById,
+  getTourBySlug,
   createTour,
   updateTour,
   deleteTour,
