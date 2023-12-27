@@ -44,11 +44,12 @@ reviewController.post(
   hasUser(),
   isRestricted("user"),
   catchAsync(async (req, res, next) => {
+    let tour = await getTourBySlug(req.params.slug);
     const newReview = {
       review: req.body.review,
       rating: req.body.rating,
       user: req.user._id,
-      tour: req.params.tourId,
+      tour: tour._id,
     };
     const review = await createReview(newReview);
     res.status(201).json({
